@@ -44,6 +44,9 @@ compile_commands.json
 CTestTestfile.cmake
 _deps
 
+cmake-build-debug
+cmake-build-release
+
 # OS generated files #
 ######################
 .DS_Store

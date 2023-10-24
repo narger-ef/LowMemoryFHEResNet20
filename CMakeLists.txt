@@ -56,4 +56,4 @@ endif()
 ### add_executable( EXECUTABLE-NAME SOURCES )
 ###
 ### EXAMPLE:
-add_executable(PaperResNet main.cpp FHEController.h)
+add_executable(PaperResNet src/main.cpp src/FHEController.h)
