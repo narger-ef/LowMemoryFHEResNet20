@@ -56,3 +56,4 @@ cmake-build-release
 .Trashes
 ehthumbs.db
 Thumbs.db
+.DS_Store
