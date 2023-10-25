@@ -1,7 +1,7 @@
 #include <iostream>
 #include "FHEController.h"
 
-void check_arguments(int argc, char *argv[]);
+void check_arguments(int argc, char *argv[], bool default_generate);
 
 void executeResNet20(const string& filename);
 Ctxt layer1(const Ctxt& in);
