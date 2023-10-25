@@ -46,6 +46,8 @@ _deps
 
 cmake-build-debug
 cmake-build-release
+parameters
+checkpoints
 
 # OS generated files #
 ######################
