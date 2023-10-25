@@ -3,7 +3,7 @@ This repository contains a OpenFHE-based project that implements an encrypted ve
 
 ### Architecture
 
-<img src="img/architecture.png" alt="Architecture description" width=65%>
+<img src="img/architecture.png" alt="Architecture description" width=75%>
 
 Bla bla
 
