@@ -73,7 +73,7 @@ public:
     /*
      * I/O
      */
-    Ctxt read_input(string filename, double scale = 1);
+    Ctxt read_input(const string& filename, double scale = 1);
     void print(const Ctxt& c, usint slots = 0, string prefix = "");
 
     /*

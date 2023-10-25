@@ -319,7 +319,7 @@ Ctxt FHEController::relu(const Ctxt &c, double scale, bool timing) {
  * I/O
  */
 
-Ctxt FHEController::read_input(string filename, double scale) {
+Ctxt FHEController::read_input(const string& filename, double scale) {
     vector<double> input = read_values_from_file(filename);
 
     if (scale != 1) {

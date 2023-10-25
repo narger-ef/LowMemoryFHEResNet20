@@ -1,20 +1,20 @@
 #include <iostream>
 #include "FHEController.h"
-#include <mach/mach.h>
 
+void check_arguments(int argc, char *argv[]);
 
-void test();
-
-void executeResNet20(string filename);
+void executeResNet20(const string& filename);
 Ctxt layer1(const Ctxt& in);
 Ctxt layer2(const Ctxt& in);
 
 FHEController controller;
 
-int main() {
-    bool generate = false;
+bool generate_context;
 
-    if (generate) {
+int main(int argc, char *argv[]) {
+    check_arguments(argc, argv, false);
+
+    if (generate_context) {
         controller.generate_context(true);
         controller.generate_bootstrapping_and_rotation_keys({1, -1, 32, -32, -1024, 16384},
                                                             16384,
@@ -35,12 +35,12 @@ int main() {
     executeResNet20("../test_images/input_louis.bin");
 }
 
-void executeResNet20(string filename) {
+void executeResNet20(const string& filename) {
     cout << "Starting ResNet20 classification." << endl;
     Ctxt in = controller.read_input(filename);
 
 
-    Ctxt resLayer1, resLayer2, resLayer3;
+    Ctxt resLayer1, resLayer2;
 
     auto start = start_time();
 
@@ -164,40 +164,23 @@ Ctxt layer1(const Ctxt& in) {
     return res3;
 }
 
-void test() {
-    //TODO: Fare le convbn estendendo a 32000 slot, facendo 8 rotazioni :) e vedere se ci mette meno
+void check_arguments(int argc, char *argv[], bool default_generate) {
+    for (int i = 1; i < argc; ++i) {
+        if (string(argv[i]) == "context") {
+            if (i + 1 < argc) { // Verifica se c'è un argomento successivo a "context"
+                if (string(argv[i + 1]) == "generate") {
+                    generate_context = true;
+                    return;
+                } else if (string(argv[i + 1]) == "load") {
+                    generate_context = false;
+                    return;
+                } else {
+                    cerr << R"(Unknown option passed to "context", insert either "generate" or "load")" << endl;
+                    exit(1);
+                }
+            }
+        }
+    }
 
-    Ctxt c = controller.encrypt({0}, 30);
-    auto start = start_time();
-    c = controller.bootstrap(c);
-    print_duration(start, "Bootstrapping for 16384 slots");
-
-    start = start_time();
-    controller.clear_bootstrapping_and_rotation_keys(16384);
-    print_duration(start, "Clearing 16384 slots");
-
-    start = start_time();
-    controller.generate_bootstrapping_keys(8192);
-    print_duration(start, "Generating 8192 keys");
-
-    start = start_time();
-    c = controller.encrypt({0}, 30, 8192);
-    c = controller.bootstrap(c);
-    print_duration(start, "Bootstrapping for 8192 slots");
-
-    start = start_time();
-    controller.clear_bootstrapping_and_rotation_keys(8192);
-    print_duration(start, "Clearing 8192 slots");
-
-    start = start_time();
-    controller.generate_bootstrapping_keys(4096);
-    print_duration(start, "Generating 4096 keys");
-
-    start = start_time();
-    c = controller.encrypt({0}, 30, 4096);
-    c = controller.bootstrap(c);
-    print_duration(start, "Bootstrapping for 4096 slots");
-
-
-    controller.read_input("../test_images/input_louis.bin");
+    generate_context = default_generate;
 }
