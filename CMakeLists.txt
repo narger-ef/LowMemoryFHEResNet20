@@ -16,7 +16,7 @@ cmake_minimum_required (VERSION 3.5.1)
 ### After you run "make install" in your build directory, you can build your custom application.
 ### If you need your application to be linked statically, then run "cmake .. -DBUILD_STATIC=ON"
 
-project(PaperResNet)
+project(LowMemoryFHEResNet20)
 set(CMAKE_CXX_STANDARD 17)
 option( BUILD_STATIC "Set to ON to include static versions of the library" OFF)
 
@@ -56,4 +56,4 @@ endif()
 ### add_executable( EXECUTABLE-NAME SOURCES )
 ###
 ### EXAMPLE:
-add_executable(PaperResNet src/main.cpp src/FHEController.h)
+add_executable(LowMemoryFHEResNet20 src/main.cpp src/FHEController.h src/FHEController.cpp src/Utils.h)
