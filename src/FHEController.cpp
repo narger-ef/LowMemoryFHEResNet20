@@ -396,7 +396,7 @@ Ctxt FHEController::convbn(const Ctxt &in, int layer, int n, double scale, bool 
     c_rotations.push_back(
             context->EvalRotate(context->EvalFastRotation(in, padding, context->GetCyclotomicOrder(), digits), img_width ));
 
-    Ptxt bias = encode(read_values_from_file("../weights/layer" + to_string(layer) + "-conv" + to_string(n) + "bn" + to_string(n) + "-bias.bin", 0.5));
+    Ptxt bias = encode(read_values_from_file("../weights/layer" + to_string(layer) + "-conv" + to_string(n) + "bn" + to_string(n) + "-bias.bin", 0.5), in->GetLevel(), 16384);
 
     Ctxt finalsum;
 
@@ -406,7 +406,7 @@ Ctxt FHEController::convbn(const Ctxt &in, int layer, int n, double scale, bool 
         for (int k = 0; k < 9; k++) {
             vector<double> values = read_values_from_file("../weights/layer" + to_string(layer) + "-conv" + to_string(n) + "bn" + to_string(n) + "-ch" +
                                                       to_string(j) + "-k" + to_string(k+1) + ".bin", scale);
-            Ptxt encoded = encode(values, circuit_depth - 2, 16384);
+            Ptxt encoded = encode(values, in->GetLevel(), 16384);
             k_rows.push_back(context->EvalMult(c_rotations[k], encoded));
         }
 
@@ -516,8 +516,8 @@ vector<Ctxt> FHEController::convbn1632sx(const Ctxt &in, int layer, int n, doubl
     vector<Ctxt> applied_filters32;
 
 
-    Ptxt bias1 = encode(read_values_from_file("../weights/layer" + to_string(layer) + "-conv" + to_string(n) + "bn" + to_string(n) + "-bias1.bin", scale));
-    Ptxt bias2 = encode(read_values_from_file("../weights/layer" + to_string(layer) + "-conv" + to_string(n) + "bn" + to_string(n) + "-bias2.bin", scale));
+    Ptxt bias1 = encode(read_values_from_file("../weights/layer" + to_string(layer) + "-conv" + to_string(n) + "bn" + to_string(n) + "-bias1.bin", scale), in->GetLevel(), 16384);
+    Ptxt bias2 = encode(read_values_from_file("../weights/layer" + to_string(layer) + "-conv" + to_string(n) + "bn" + to_string(n) + "-bias2.bin", scale), in->GetLevel(), 16384);
 
     Ctxt finalSum016;
     Ctxt finalSum1632;
@@ -529,11 +529,11 @@ vector<Ctxt> FHEController::convbn1632sx(const Ctxt &in, int layer, int n, doubl
         for (int k = 0; k < 9; k++) {
             vector<double> values = read_values_from_file("../weights/layer" + to_string(layer) + "-conv" + to_string(n) + "bn" + to_string(n) + "-ch" +
                                                       to_string(j) + "-k" + to_string(k+1) + ".bin", scale);
-            k_rows016.push_back(context->EvalMult(c_rotations[k], encode(values)));
+            k_rows016.push_back(context->EvalMult(c_rotations[k], encode(values, in->GetLevel(), 16384)));
 
             values = read_values_from_file("../weights/layer" + to_string(layer) + "-conv" + to_string(n) + "bn" + to_string(n) + "-ch" +
                                        to_string(j+16) + "-k" + to_string(k+1) + ".bin", scale);
-            k_rows1632.push_back(context->EvalMult(c_rotations[k], encode(values)));
+            k_rows1632.push_back(context->EvalMult(c_rotations[k], encode(values, in->GetLevel(), 16384)));
         }
 
         Ctxt sum016 = context->EvalAddMany(k_rows016);
@@ -569,8 +569,8 @@ vector<Ctxt> FHEController::convbn1632dx(const Ctxt &in, int layer, int n, doubl
     vector<Ctxt> applied_filters16;
     vector<Ctxt> applied_filters32;
 
-    Ptxt bias1 = encode(read_values_from_file("../weights/layer" + to_string(layer) + "dx-conv" + to_string(n) + "bn" + to_string(n) + "-bias1.bin", scale));
-    Ptxt bias2 = encode(read_values_from_file("../weights/layer" + to_string(layer) + "dx-conv" + to_string(n) + "bn" + to_string(n) + "-bias2.bin", scale));
+    Ptxt bias1 = encode(read_values_from_file("../weights/layer" + to_string(layer) + "dx-conv" + to_string(n) + "bn" + to_string(n) + "-bias1.bin", scale), in->GetLevel(), 16384);
+    Ptxt bias2 = encode(read_values_from_file("../weights/layer" + to_string(layer) + "dx-conv" + to_string(n) + "bn" + to_string(n) + "-bias2.bin", scale), in->GetLevel(), 16384);
 
     Ctxt finalSum016;
     Ctxt finalSum1632;
@@ -615,16 +615,143 @@ vector<Ctxt> FHEController::convbn1632dx(const Ctxt &in, int layer, int n, doubl
     return {finalSum016, finalSum1632};
 }
 
+vector<Ctxt> FHEController::convbn3264sx(const Ctxt &in, int layer, int n, double scale, bool timing) {
+    auto start = start_time();
+
+    vector<Ctxt> c_rotations;
+
+    int img_width = 16;
+    int padding = 1;
+
+    auto digits = context->EvalFastRotationPrecompute(in);
+
+    c_rotations.push_back(
+            context->EvalRotate(context->EvalFastRotation(in, -(img_width), context->GetCyclotomicOrder(), digits), -padding));
+    c_rotations.push_back(context->EvalFastRotation(in, -img_width, context->GetCyclotomicOrder(), digits));
+    c_rotations.push_back(
+            context->EvalRotate(context->EvalFastRotation(in, -(img_width), context->GetCyclotomicOrder(), digits), padding));
+    c_rotations.push_back(context->EvalFastRotation(in, -padding, context->GetCyclotomicOrder(), digits));
+    c_rotations.push_back(in);
+    c_rotations.push_back(context->EvalFastRotation(in, padding, context->GetCyclotomicOrder(), digits));
+    c_rotations.push_back(
+            context->EvalRotate(context->EvalFastRotation(in, (img_width), context->GetCyclotomicOrder(), digits), -padding));
+    c_rotations.push_back(context->EvalFastRotation(in, img_width, context->GetCyclotomicOrder(), digits));
+    c_rotations.push_back(
+            context->EvalRotate(context->EvalFastRotation(in, (img_width), context->GetCyclotomicOrder(), digits), padding));
+
+    vector<Ctxt> applied_filters32;
+    vector<Ctxt> applied_filters64;
+
+
+    Ptxt bias1 = encode(read_values_from_file("../weights/layer" + to_string(layer) + "-conv" + to_string(n) + "bn" + to_string(n) + "-bias1.bin", scale), in->GetLevel(), 8192);
+    Ptxt bias2 = encode(read_values_from_file("../weights/layer" + to_string(layer) + "-conv" + to_string(n) + "bn" + to_string(n) + "-bias2.bin", scale), in->GetLevel(), 8192);
+
+    Ctxt finalSum032;
+    Ctxt finalSum3264;
+
+    for (int j = 0; j < 32; j++) {
+        vector<Ctxt> k_rows032;
+        vector<Ctxt> k_rows3264;
+
+        for (int k = 0; k < 9; k++) {
+            vector<double> values = read_values_from_file("../weights/layer" + to_string(layer) + "-conv" + to_string(n) + "bn" + to_string(n) + "-ch" +
+                                                          to_string(j) + "-k" + to_string(k+1) + ".bin", scale);
+            k_rows032.push_back(context->EvalMult(c_rotations[k], encode(values, in->GetLevel(), 8192)));
+
+            values = read_values_from_file("../weights/layer" + to_string(layer) + "-conv" + to_string(n) + "bn" + to_string(n) + "-ch" +
+                                           to_string(j+16) + "-k" + to_string(k+1) + ".bin", scale);
+            k_rows3264.push_back(context->EvalMult(c_rotations[k], encode(values, in->GetLevel(), 8192)));
+        }
+
+        Ctxt sum032 = context->EvalAddMany(k_rows032);
+        Ctxt sum3264 = context->EvalAddMany(k_rows3264);
+
+        if (j == 0) {
+            finalSum032 = sum032->Clone();
+            finalSum032 = context->EvalRotate(finalSum032, -256);
+            finalSum3264 = sum3264->Clone();
+            finalSum3264 = context->EvalRotate(finalSum3264, -256);
+        } else {
+            finalSum032 = context->EvalAdd(finalSum032, sum032);
+            finalSum032 = context->EvalRotate(finalSum032, -256);
+            finalSum3264 = context->EvalAdd(finalSum3264, sum3264);
+            finalSum3264 = context->EvalRotate(finalSum3264, -256);
+        }
+
+    }
+
+    finalSum032 = context->EvalAdd(finalSum032, bias1);
+    finalSum3264 = context->EvalAdd(finalSum3264, bias2);
+
+    if (timing) {
+        print_duration(start, "Layer" + to_string(layer) + " - convbnSx" + to_string(n));
+    }
+
+    return {finalSum032, finalSum3264};
+}
+
+vector<Ctxt> FHEController::convbn3264dx(const Ctxt &in, int layer, int n, double scale, bool timing) {
+    auto start = start_time();
+
+    vector<Ctxt> applied_filters32;
+    vector<Ctxt> applied_filters64;
+
+    Ptxt bias1 = encode(read_values_from_file("../weights/layer" + to_string(layer) + "dx-conv" + to_string(n) + "bn" + to_string(n) + "-bias1.bin", scale), in->GetLevel(), 8192);
+    Ptxt bias2 = encode(read_values_from_file("../weights/layer" + to_string(layer) + "dx-conv" + to_string(n) + "bn" + to_string(n) + "-bias2.bin", scale), in->GetLevel(), 8192);
+
+    Ctxt finalSum032;
+    Ctxt finalSum3264;
+
+    for (int j = 0; j < 32; j++) {
+        vector<Ctxt> k_rows032;
+        vector<Ctxt> k_rows3264;
+
+        vector<double> values = read_values_from_file("../weights/layer" + to_string(layer) + "dx-conv" + to_string(n) + "bn" + to_string(n) + "-ch" +
+                                                      to_string(j) + "-k" + to_string(1) + ".bin", scale);
+        k_rows032.push_back(context->EvalMult(in, encode(values, in->GetLevel(), 8192)));
+
+        values = read_values_from_file("../weights/layer" + to_string(layer) + "dx-conv" + to_string(n) + "bn" + to_string(n) + "-ch" +
+                                       to_string(j+32) + "-k" + to_string(1) + ".bin", scale);
+
+        k_rows3264.push_back(context->EvalMult(in, encode(values, in->GetLevel(), 8192)));
+
+        Ctxt sum032 = context->EvalAddMany(k_rows032);
+        Ctxt sum3264 = context->EvalAddMany(k_rows3264);
+
+        if (j == 0) {
+            finalSum032 = sum032->Clone();
+            finalSum032 = context->EvalRotate(finalSum032, -1024);
+            finalSum3264 = sum3264->Clone();
+            finalSum3264 = context->EvalRotate(finalSum3264, -1024);
+        } else {
+            finalSum032 = context->EvalAdd(finalSum032, sum032);
+            finalSum032 = context->EvalRotate(finalSum032, -1024);
+            finalSum3264 = context->EvalAdd(finalSum3264, sum3264);
+            finalSum3264 = context->EvalRotate(finalSum3264, -1024);
+        }
+
+    }
+
+    finalSum032 = context->EvalAdd(finalSum032, bias1);
+    finalSum3264 = context->EvalAdd(finalSum3264, bias2);
+
+    if (timing) {
+        print_duration(start, "Layer" + to_string(layer) + " - convbnDx" + to_string(n));
+    }
+
+    return {finalSum032, finalSum3264};
+}
+
 Ctxt FHEController::downsample1024to256(const Ctxt &c1, const Ctxt &c2) {
     c1->SetSlots(32768);
     c2->SetSlots(32768);
     num_slots = 16384*2;
-    Ctxt fullpack = add(mult(c1, mask_first_n(16384)), mult(c2, mask_second_n(16384)));
+    Ctxt fullpack = add(mult(c1, mask_first_n(16384, c1->GetLevel())), mult(c2, mask_second_n(16384, c2->GetLevel())));
 
     //Affianco tutte le righe
-    fullpack = context->EvalMult(context->EvalAdd(fullpack, context->EvalRotate(fullpack, 1)), gen_mask(2));
-    fullpack = context->EvalMult(context->EvalAdd(fullpack, context->EvalRotate(context->EvalRotate(fullpack, 1), 1)), gen_mask(4));
-    fullpack = context->EvalMult(context->EvalAdd(fullpack, context->EvalRotate(fullpack, 4)), gen_mask(8));
+    fullpack = context->EvalMult(context->EvalAdd(fullpack, context->EvalRotate(fullpack, 1)), gen_mask(2, fullpack->GetLevel()));
+    fullpack = context->EvalMult(context->EvalAdd(fullpack, context->EvalRotate(context->EvalRotate(fullpack, 1), 1)), gen_mask(4, fullpack->GetLevel()));
+    fullpack = context->EvalMult(context->EvalAdd(fullpack, context->EvalRotate(fullpack, 4)), gen_mask(8, fullpack->GetLevel()));
     fullpack = context->EvalAdd(fullpack, context->EvalRotate(fullpack, 8));
 
     Ctxt downsampledrows = encrypt({0});
@@ -653,43 +780,41 @@ Ctxt FHEController::downsample1024to256(const Ctxt &c1, const Ctxt &c2) {
     return downsampledchannels;
 
 }
-Ctxt FHEController::downsample1024to256(const Ctxt &in) {
-    int lvl_iniz = in->GetLevel();
 
-    Ctxt fullpack = in;
+
+Ctxt FHEController::downsample256to64(const Ctxt &c1, const Ctxt &c2) {
+    c1->SetSlots(16384);
+    c2->SetSlots(16384);
+    num_slots = 8192*2;
+    Ctxt fullpack = add(mult(c1, mask_first_n(16384, c1->GetLevel())), mult(c2, mask_second_n(16384, c2->GetLevel())));
 
     //Affianco tutte le righe
-    fullpack = context->EvalMult(context->EvalAdd(fullpack, context->EvalRotate(fullpack, 1)), gen_mask(2));
-    fullpack = context->EvalMult(context->EvalAdd(fullpack, context->EvalRotate(context->EvalRotate(fullpack, 1), 1)), gen_mask(4));
-    fullpack = context->EvalMult(context->EvalAdd(fullpack, context->EvalRotate(fullpack, 4)), gen_mask(8));
-    fullpack = context->EvalAdd(fullpack, context->EvalRotate(fullpack, 8));
+    fullpack = context->EvalMult(context->EvalAdd(fullpack, context->EvalRotate(fullpack, 1)), gen_mask(2, fullpack->GetLevel()));
+    fullpack = context->EvalMult(context->EvalAdd(fullpack, context->EvalRotate(context->EvalRotate(fullpack, 1), 1)), gen_mask(4, fullpack->GetLevel()));
+    fullpack = context->EvalAdd(fullpack, context->EvalRotate(fullpack, 4));
 
     Ctxt downsampledrows = encrypt({0});
 
-    for (int i = 0; i < 16; i++) {
-        Ctxt masked = context->EvalMult(fullpack, mask_first_n_mod(16, 1024, i, fullpack->GetLevel()));
+    for (int i = 0; i < 32; i++) {
+        Ctxt masked = context->EvalMult(fullpack, mask_first_n_mod(8, 256, i, fullpack->GetLevel()));
         downsampledrows = context->EvalAdd(downsampledrows, masked);
-        if (i < 15) {
-            fullpack = context->EvalRotate(fullpack, 64 - 16); //Si può fare fast
+        if (i < 31) {
+            fullpack = context->EvalRotate(fullpack, 32 - 8); //Si può fare fast
         }
     }
 
     Ctxt downsampledchannels = encrypt({0});
-    for (int i = 0; i < 32; i++) {
-        Ctxt masked = context->EvalMult(downsampledrows, mask_channel(i, downsampledrows->GetLevel()));
+    for (int i = 0; i < 64; i++) {
+        Ctxt masked = context->EvalMult(downsampledrows, mask_channel_2(i, downsampledrows->GetLevel()));
         downsampledchannels = context->EvalAdd(downsampledchannels, masked);
-        downsampledchannels = context->EvalRotate(downsampledchannels, -(1024 - 256));
+        downsampledchannels = context->EvalRotate(downsampledchannels, -(256 - 64));
     }
 
-    downsampledchannels = context->EvalRotate(downsampledchannels, (1024 - 256) * 32);
-    downsampledchannels = context->EvalAdd(downsampledchannels, context->EvalRotate(downsampledchannels, -8192));
-    downsampledchannels = context->EvalAdd(downsampledchannels, context->EvalRotate(context->EvalRotate(downsampledchannels, -8192), -8192));
+    downsampledchannels = context->EvalRotate(downsampledchannels, (256 - 64) * 64);
+    downsampledchannels = context->EvalAdd(downsampledchannels, context->EvalRotate(downsampledchannels, -4096));
+    downsampledchannels = context->EvalAdd(downsampledchannels, context->EvalRotate(context->EvalRotate(downsampledchannels, -4096), -4096));
 
-    downsampledchannels->SetSlots(8192);
-
-    cout << "Downsampling used: " << downsampledchannels->GetLevel() - lvl_iniz << " levels." << endl;
-
-    print(downsampledchannels, 8192);
+    downsampledchannels->SetSlots(4096);
 
     return downsampledchannels;
 
@@ -841,7 +966,7 @@ Ctxt FHEController::convbnV2(const Ctxt &in, int layer, int n, double scale, boo
     c_rotations.push_back(
             context->EvalRotate(context->EvalFastRotation(in, padding, context->GetCyclotomicOrder(), digits), img_width ));
 
-    Ptxt bias = encode(read_values_from_file("../weights/layer" + to_string(layer) + "-conv" + to_string(n) + "bn" + to_string(n) + "-bias.bin", 0.5));
+    Ptxt bias = encode(read_values_from_file("../weights/layer" + to_string(layer) + "-conv" + to_string(n) + "bn" + to_string(n) + "-bias.bin", 0.5), in->GetLevel(), 8192);
 
     Ctxt finalsum;
 
@@ -975,4 +1100,30 @@ Ptxt FHEController::mask_channel(int n, usint level) {
     }
 
     return encode(mask, level, 16384 * 2);
+}
+
+Ptxt FHEController::mask_channel_2(int n, usint level) {
+    vector<double> mask;
+
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < 256; j++) {
+            mask.push_back(0);
+        }
+    }
+
+    for (int i = 0; i < 64; i++) {
+        mask.push_back(1);
+    }
+
+    for (int i = 0; i < 256 - 64; i++) {
+        mask.push_back(0);
+    }
+
+    for (int i = 0; i < 63 - n; i++) {
+        for (int j = 0; j < 256; j++) {
+            mask.push_back(0);
+        }
+    }
+
+    return encode(mask, level, 8192 * 2);
 }

@@ -57,7 +57,7 @@ public:
     /*
      * CKKS Encoding/Decoding/Encryption/Decryption
      */
-    Ptxt encode(const vector<double>& vec, usint level = 0, usint plaintext_num_slots = 0);
+    Ptxt encode(const vector<double>& vec, usint level, usint plaintext_num_slots);
     Ctxt encrypt(const vector<double>& vec, usint level = 0, usint plaintext_num_slots = 0);
 
 
@@ -83,10 +83,12 @@ public:
     Ctxt convbn2(const Ctxt &in, int layer, int n, double scale = 0.5, bool timing = false);
     vector<Ctxt> convbn1632sx(const Ctxt &in, int layer, int n, double scale = 0.5, bool timing = false);
     vector<Ctxt> convbn1632dx(const Ctxt &in, int layer, int n, double scale = 0.5, bool timing = false);
+    vector<Ctxt> convbn3264sx(const Ctxt &in, int layer, int n, double scale = 0.5, bool timing = false);
+    vector<Ctxt> convbn3264dx(const Ctxt &in, int layer, int n, double scale = 0.5, bool timing = false);
+
     Ctxt downsample1024to256(const Ctxt& c1, const Ctxt& c2);
+    Ctxt downsample256to64(const Ctxt &c1, const Ctxt &c2);
 
-
-    Ctxt downsample1024to256(const Ctxt &in);
     //TODO: studia sta roba
     Ctxt convbnV2(const Ctxt &in, int layer, int n, double scale = 0.5, bool timing = false);
     Ctxt convbn1632sxV2(const Ctxt &in, int layer, int n, double scale = 0.5, bool timing = false);
@@ -95,11 +97,12 @@ public:
     /*
      * Masking things
      */
-    Ptxt gen_mask(int n, usint level = 0);
-    Ptxt mask_first_n(int n, usint level = 0);
-    Ptxt mask_second_n(int n, usint level = 0);
-    Ptxt mask_first_n_mod(int n, int padding, int pos, usint level = 0);
-    Ptxt mask_channel(int n, usint level = 0);
+    Ptxt gen_mask(int n, usint level);
+    Ptxt mask_first_n(int n, usint level);
+    Ptxt mask_second_n(int n, usint level);
+    Ptxt mask_first_n_mod(int n, int padding, int pos, usint level);
+    Ptxt mask_channel(int n, usint level);
+    Ptxt mask_channel_2(int n, usint level);
 
 private:
     KeyPair<DCRTPoly> key_pair;
