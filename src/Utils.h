@@ -15,8 +15,12 @@ namespace utils {
         return high_resolution_clock::now();
     }
 
+    static duration<long long, ratio<1, 1000>> total_time;
+
     static inline void print_duration(chrono::time_point<steady_clock, nanoseconds> start, const string &title) {
         auto ms = duration_cast<milliseconds>(high_resolution_clock::now() - start);
+
+        total_time += ms;
 
         auto secs = duration_cast<seconds>(ms);
         ms -= duration_cast<milliseconds>(secs);
@@ -24,7 +28,7 @@ namespace utils {
         secs -= duration_cast<seconds>(mins);
 
         if (mins.count() < 1) {
-            cout << "⌛(" << title << "): " << secs.count() << ":" << ms.count() << "s" << endl;
+            cout << "⌛(" << title << "): " << secs.count() << ":" << ms.count() << "s" << " (Total: " << duration_cast<seconds>(total_time).count() << "s)" << endl;
         } else {
             cout << "⌛(" << title << "): " << mins.count() << "." << secs.count() << ":" << ms.count() << endl;
         }

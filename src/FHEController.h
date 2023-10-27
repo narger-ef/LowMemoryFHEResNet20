@@ -81,6 +81,7 @@ public:
      */
     Ctxt convbn(const Ctxt &in, int layer, int n, double scale = 0.5, bool timing = false);
     Ctxt convbn2(const Ctxt &in, int layer, int n, double scale = 0.5, bool timing = false);
+    Ctxt convbn3(const Ctxt &in, int layer, int n, double scale = 0.5, bool timing = false);
     vector<Ctxt> convbn1632sx(const Ctxt &in, int layer, int n, double scale = 0.5, bool timing = false);
     vector<Ctxt> convbn1632dx(const Ctxt &in, int layer, int n, double scale = 0.5, bool timing = false);
     vector<Ctxt> convbn3264sx(const Ctxt &in, int layer, int n, double scale = 0.5, bool timing = false);
@@ -101,6 +102,7 @@ public:
     Ptxt mask_first_n(int n, usint level);
     Ptxt mask_second_n(int n, usint level);
     Ptxt mask_first_n_mod(int n, int padding, int pos, usint level);
+    Ptxt mask_first_n_mod2(int n, int padding, int pos, usint level);
     Ptxt mask_channel(int n, usint level);
     Ptxt mask_channel_2(int n, usint level);
 
