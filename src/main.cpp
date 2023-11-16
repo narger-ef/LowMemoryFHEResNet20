@@ -7,6 +7,7 @@ void executeResNet20(const string& filename);
 Ctxt layer1(const Ctxt& in);
 Ctxt layer2(const Ctxt& in);
 Ctxt layer3(const Ctxt& in);
+Ctxt finalLayer(const Ctxt& in);
 
 FHEController controller;
 
@@ -21,6 +22,7 @@ bool generate_context;
 int main(int argc, char *argv[]) {
     //TODO: prova con ReLU a 119
     //TODO: possibile che il bootstrap a 8192 ci metta lo stesso tempo? indaga
+    //TODO: Riga 327 di ckksrns-fhe.cpp, quella moltiplicazione posso inglobarla nei miei calcoli? Per fare una mult in meno
 
     check_arguments(argc, argv, false);
 
@@ -62,8 +64,7 @@ void executeResNet20(const string& filename) {
     cout << "Starting ResNet20 classification." << endl;
     Ctxt in = controller.read_input(filename);
 
-
-    Ctxt resLayer1, resLayer2, resLayer3;
+    Ctxt resLayer1, resLayer2, resLayer3, finalRes;
 
     auto start = start_time();
 
@@ -78,14 +79,37 @@ void executeResNet20(const string& filename) {
     resLayer3 = layer3(resLayer2);
     Serial::SerializeToFile("../checkpoints/layer3.bin", resLayer3, SerType::BINARY);
 
-    controller.print(resLayer3, 4096);
-    print_duration(start, "Whole network");
+    Serial::DeserializeFromFile("../checkpoints/layer3.bin", resLayer3, SerType::BINARY);
+    finalRes = finalLayer(resLayer3);
 
+    print_duration(start, "Whole network");
+}
+
+Ctxt finalLayer(const Ctxt& in) {
+    controller.clear_bootstrapping_and_rotation_keys(4096);
+    //controller.generate_rotation_keys({1, 2, 4, 8, 16, 32, -15, 64, 128, 256, 512, 1024, 2048}, true, "rotations-finallayer.bin");
+    controller.load_rotation_keys("rotations-finallayer.bin");
+
+    controller.num_slots = 4096;
+
+    Ptxt weight = controller.encode(read_fc_weight("../weights/fc.bin"), in->GetLevel(), controller.num_slots);
+
+    Ctxt res = controller.rotsum(in, 64);
+    res = controller.mult(res, controller.mask_mod(64, res->GetLevel(), 1.0 / 64.0));
+
+    //From here, I need 10 repetitons, but I use 16 since *repeat* goes exponentially
+    res = controller.repeat(res, 16);
+    res = controller.mult(res, weight);
+    res = controller.rotsum_padded(res, 64);
+
+    cout << "Expected:  [ -1.3003707473, -2.6922762493,  1.7660588576,  0.9481022234, -4.3456770206,  0.1051018753,  2.1237186188, -0.4821936702,  5.1143611199, -1.2396680442 ]" << endl;
+    controller.print(res, 10, "FC Output: ");
+
+    return res;
 }
 
 Ctxt layer3(const Ctxt& in) {
     cout << "Expected: [  0.0010650244, -0.0032426584, -0.0019287463, -0.0013246684,  0.0000994662,  ...]" << endl;
-    controller.print(in, 5, "Received: ");
 
     double scale = 0.5;
 
@@ -116,10 +140,10 @@ Ctxt layer3(const Ctxt& in) {
     cout << "---Start: Layer3 - Block 2---" << endl;
     start = start_time();
     Ctxt res2;
-    res2 = controller.convbn3(res1, 7, 2, scale, true);
+    res2 = controller.convbn3(res1, 8, 1, scale, true);
     res2 = controller.bootstrap(res2, true);
     res2 = controller.relu(res2, scale, true);
-    res2 = controller.convbn3(res2, 7, 2, scale, true);
+    res2 = controller.convbn3(res2, 8, 2, scale, true);
     res2 = controller.add(res2, controller.mult(res1, scale));
     res2 = controller.bootstrap(res2, true);
     res2 = controller.relu(res2, scale, true);
@@ -129,25 +153,24 @@ Ctxt layer3(const Ctxt& in) {
     cout << "---Start: Layer3 - Block 3---" << endl;
     start = start_time();
     Ctxt res3;
-    res3 = controller.convbn3(res2, 7, 2, scale, true);
+
+    res3 = controller.convbn3(res2, 9, 1, scale, true);
     res3 = controller.bootstrap(res3, true);
     res3 = controller.relu(res3, scale, true);
-    res3 = controller.convbn3(res3, 7, 2, scale, true);
+    res3 = controller.convbn3(res3, 9, 2, scale, true);
     res3 = controller.add(res3, controller.mult(res2, scale));
     res3 = controller.bootstrap(res3, true);
-    res3 = controller.relu(res3, scale, true);
+    res3 = controller.relu_wide(res3, -1.1, 2.8, 59, scale, true);
+    res3 = controller.bootstrap(res3, true);
     print_duration(start, "Total");
     cout << "---End  : Layer3 - Block 3---" << endl;
 
-    controller.print(res3, 4096);
+
 
     return res3;
 }
 
 Ctxt layer2(const Ctxt& in) {
-    cout << "Expected: [  0.2059338669,  0.1945351973,  0.2480461048,  0.3422931948,  0.3457289039, ...]" << endl;
-    controller.print(in, 5, "Received: ");
-
     double scale = 0.5;
 
     cout << "---Start: Layer2 - Block 1---" << endl;
@@ -241,10 +264,10 @@ Ctxt layer1(const Ctxt& in) {
     res3 = controller.add(res3, controller.mult(res2, scale));
     res3 = controller.bootstrap(res3, true);
     res3 = controller.relu(res3, scale, true);
+
     print_duration(start, "Total");
     cout << "---End  : Layer1 - Block 3---" << endl;
 
-    //controller.print(res3, 16384);
     return res3;
 }
 

@@ -58,6 +58,7 @@ public:
      * CKKS Encoding/Decoding/Encryption/Decryption
      */
     Ptxt encode(const vector<double>& vec, usint level, usint plaintext_num_slots);
+    Ptxt encode(double val, usint level, usint plaintext_num_slots);
     Ctxt encrypt(const vector<double>& vec, usint level = 0, usint plaintext_num_slots = 0);
 
 
@@ -69,13 +70,14 @@ public:
     Ctxt mult(const Ctxt& c, const Ptxt& p);
     Ctxt bootstrap(const Ctxt& c, bool timing = false);
     Ctxt relu(const Ctxt& c, double scale, bool timing = false);
+    Ctxt relu_wide(const Ctxt& c, double a, double b, usint degree, double scale, bool timing = false);
 
     /*
      * I/O
      */
     Ctxt read_input(const string& filename, double scale = 1);
     void print(const Ctxt& c, usint slots = 0, string prefix = "");
-
+    void print_padded(const Ctxt& c, usint slots = 0, usint padding = 1, string prefix = "");
     /*
      * Convolutional Neural Network functions
      */
@@ -90,10 +92,17 @@ public:
     Ctxt downsample1024to256(const Ctxt& c1, const Ctxt& c2);
     Ctxt downsample256to64(const Ctxt &c1, const Ctxt &c2);
 
+    Ctxt rotsum(const Ctxt &in, int slots);
+    Ctxt rotsum_padded(const Ctxt &in, int slots);
+
+    Ctxt repeat(const Ctxt &in, int slots);
+
     //TODO: studia sta roba
     Ctxt convbnV2(const Ctxt &in, int layer, int n, double scale = 0.5, bool timing = false);
     Ctxt convbn1632sxV2(const Ctxt &in, int layer, int n, double scale = 0.5, bool timing = false);
     Ctxt convbn1632dxV2(const Ctxt &in, int layer, int n, double scale = 0.5, bool timing = false);
+
+
 
     /*
      * Masking things
@@ -105,6 +114,9 @@ public:
     Ptxt mask_first_n_mod2(int n, int padding, int pos, usint level);
     Ptxt mask_channel(int n, usint level);
     Ptxt mask_channel_2(int n, usint level);
+
+    Ptxt mask_mod(int n, usint level, double custom_val);
+
 
 private:
     KeyPair<DCRTPoly> key_pair;

@@ -14,6 +14,8 @@ void FHEController::generate_context(bool serialize) {
     parameters.SetRingDim(1 << 16);
     parameters.SetBatchSize(num_slots);
 
+    //TODO: try with 46, 51
+
     ScalingTechnique rescaleTech = FLEXIBLEAUTO;
     usint dcrtBits               = 59;
     usint firstMod               = 60;
@@ -247,6 +249,21 @@ Ptxt FHEController::encode(const vector<double> &vec, usint level, usint plainte
     return p;
 }
 
+Ptxt FHEController::encode(double val, usint level, usint plaintext_num_slots) {
+    if (plaintext_num_slots == 0) {
+        plaintext_num_slots = num_slots;
+    }
+
+    vector<double> vec;
+    for (int i = 0; i < plaintext_num_slots; i++) {
+        vec.push_back(val);
+    }
+
+    Ptxt p = context->MakeCKKSPackedPlaintext(vec, 1, level, nullptr, plaintext_num_slots);
+    p->SetLength(plaintext_num_slots);
+    return p;
+}
+
 Ctxt FHEController::encrypt(const vector<double> &vec, usint level, usint plaintext_num_slots) {
     if (plaintext_num_slots == 0) {
         plaintext_num_slots = num_slots;
@@ -265,7 +282,8 @@ Ctxt FHEController::add(const Ctxt &c1, const Ctxt &c2) {
 }
 
 Ctxt FHEController::mult(const Ctxt &c1, double d) {
-    return context->EvalMult(c1, d);
+    Ptxt p = encode(d, c1->GetLevel(), num_slots);
+    return context->EvalMult(c1, p);
 }
 
 Ctxt FHEController::mult(const Ctxt &c, const Ptxt& p) {
@@ -314,6 +332,31 @@ Ctxt FHEController::relu(const Ctxt &c, double scale, bool timing) {
     return res;
 }
 
+Ctxt FHEController::relu_wide(const Ctxt &c, double a, double b, usint degree, double scale, bool timing) {
+    auto start = start_time();
+
+    /*
+     * Max min
+     */
+    Ptxt result;
+    context->Decrypt(key_pair.secretKey, c, &result);
+    vector<double> v = result->GetRealPackedValue();
+
+    cout << "min: " << *min_element(v.begin(), v.end()) << ", max: " << *max_element(v.begin(), v.end()) << endl;
+    /*
+     * Max min
+     */
+
+    Ctxt res = context->EvalChebyshevFunction([scale](double x) -> double { if (x < 0) return 0; else return (1 / scale) * x; }, c,
+                                              a,
+                                              b, degree);
+    if (timing) {
+        print_duration(start, "ReLU d = " + to_string(degree) + " evaluation");
+    }
+
+    return res;
+}
+
 
 /*
  * I/O
@@ -347,6 +390,44 @@ void FHEController::print(const Ctxt &c, usint slots, string prefix) {
     cout << "[ ";
 
     for (int i = 0; i < slots; i += 1) {
+        string segno = "";
+        if (v[i] > 0) {
+            segno = " ";
+        } else {
+            segno = "-";
+            v[i] = -v[i];
+        }
+
+
+        if (i == slots - 1) {
+            cout << segno << v[i] << " ]";
+        } else {
+            if (abs(v[i]) < 0.00000001)
+                cout << " 0.0000000000" << ", ";
+            else
+                cout << segno << v[i] << ", ";
+        }
+    }
+
+    cout << endl;
+}
+
+void FHEController::print_padded(const Ctxt &c, usint slots, usint padding, string prefix) {
+    if (slots == 0) {
+        slots = num_slots;
+    }
+
+    cout << prefix;
+
+    Ptxt result;
+    context->Decrypt(key_pair.secretKey, c, &result);
+    result->SetSlots(num_slots);
+    vector<double> v = result->GetRealPackedValue();
+
+    cout << setprecision(10) << fixed;
+    cout << "[ ";
+
+    for (int i = 0; i < slots * padding; i += padding) {
         string segno = "";
         if (v[i] > 0) {
             segno = " ";
@@ -888,6 +969,30 @@ Ctxt FHEController::downsample256to64(const Ctxt &c1, const Ctxt &c2) {
 
 }
 
+Ctxt FHEController::rotsum(const Ctxt &in, int slots) {
+    Ctxt result = in->Clone();
+
+    for (int i = 0; i < log2(slots); i++) {
+        result = add(result, context->EvalRotate(result, pow(2, i)));
+    }
+
+    return result;
+}
+
+Ctxt FHEController::rotsum_padded(const Ctxt &in, int slots) {
+    Ctxt result = in->Clone();
+
+    for (int i = 0; i < log2(slots); i++) {
+        result = add(result, context->EvalRotate(result, slots * pow(2, i)));
+    }
+
+    return result;
+}
+
+Ctxt FHEController::repeat(const Ctxt &in, int slots) {
+    return context->EvalRotate(rotsum(in, slots), -slots + 1);
+}
+
 Ctxt FHEController::convbn1632sxV2(const Ctxt &in, int layer, int n, double scale, bool timing) {
     auto start = start_time();
 
@@ -1211,4 +1316,18 @@ Ptxt FHEController::mask_channel_2(int n, usint level) {
     }
 
     return encode(mask, level, 8192 * 2);
+}
+
+Ptxt FHEController::mask_mod(int n, usint level, double custom_val) {
+    vector<double> vec;
+
+    for (int i = 0; i < num_slots; i++) {
+        if (i % n == 0) {
+            vec.push_back(custom_val);
+        } else {
+            vec.push_back(0);
+        }
+    }
+
+    return encode(vec, level, num_slots);
 }

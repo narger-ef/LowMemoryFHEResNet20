@@ -60,6 +60,22 @@ namespace utils {
         file.close();
         return values;
     }
+
+    static inline vector<double> read_fc_weight (const string& filename) {
+        vector<double> weight = read_values_from_file("../weights/fc.bin");
+        vector<double> weight_corrected;
+
+        for (int i = 0; i < 64; i++) {
+            for (int j = 0; j < 10; j++) {
+                weight_corrected.push_back(weight[(10 * i) + j]);
+            }
+            for (int j = 0; j < 64 - 10; j++) {
+                weight_corrected.push_back(0);
+            }
+        }
+
+        return weight_corrected;
+    }
 }
 
 #endif //LOWMEMORYFHERESNET20_UTILS_H
