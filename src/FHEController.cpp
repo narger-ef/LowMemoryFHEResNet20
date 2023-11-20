@@ -59,7 +59,7 @@ void FHEController::generate_context(bool serialize) {
 
     cout << "Now serializing keys ..." << endl;
 
-    ofstream multKeyFile("../parameters/mult-keys.txt", ios::out | ios::binary);
+    ofstream multKeyFile("../" + parameters_folder + "/mult-keys.txt", ios::out | ios::binary);
     if (multKeyFile.is_open()) {
         if (!context->SerializeEvalMultKey(multKeyFile, SerType::BINARY)) {
             cerr << "Error writing eval mult keys" << std::endl;
@@ -73,19 +73,19 @@ void FHEController::generate_context(bool serialize) {
         exit(1);
     }
 
-    if (!Serial::SerializeToFile("../parameters/crypto-context.txt", context, SerType::BINARY)) {
+    if (!Serial::SerializeToFile("../" + parameters_folder + "/crypto-context.txt", context, SerType::BINARY)) {
         cerr << "Error writing serialization of the crypto context to crypto-context.txt" << endl;
     } else {
         cout << "Crypto Context have been serialized" << std::endl;
     }
 
-    if (!Serial::SerializeToFile("../parameters/public-key.txt", key_pair.publicKey, SerType::BINARY)) {
+    if (!Serial::SerializeToFile("../" + parameters_folder + "/public-key.txt", key_pair.publicKey, SerType::BINARY)) {
         cerr << "Error writing serialization of public key to public-key.txt" << endl;
     } else {
         cout << "Public Key has been serialized" << std::endl;
     }
 
-    if (!Serial::SerializeToFile("../parameters/secret-key.txt", key_pair.secretKey, SerType::BINARY)) {
+    if (!Serial::SerializeToFile("../" + parameters_folder + "/secret-key.txt", key_pair.secretKey, SerType::BINARY)) {
         cerr << "Error writing serialization of public key to secret-key.txt" << endl;
     } else {
         cout << "Secret Key has been serialized" << std::endl;
@@ -100,19 +100,19 @@ void FHEController::load_context() {
 
     cout << "Reading serialized context..." << endl;
 
-    if (!Serial::DeserializeFromFile("../parameters/crypto-context.txt", context, SerType::BINARY)) {
-        cerr << "I cannot read serialized data from: crypto-context.txt" << endl;
+    if (!Serial::DeserializeFromFile("../" + parameters_folder + "/crypto-context.txt", context, SerType::BINARY)) {
+        cerr << "I cannot read serialized data from: " << "../" + parameters_folder + "/crypto-context.txt" << endl;
         exit(1);
     }
 
     PublicKey<DCRTPoly> clientPublicKey;
-    if (!Serial::DeserializeFromFile("../parameters/public-key.txt", clientPublicKey, SerType::BINARY)) {
+    if (!Serial::DeserializeFromFile("../" + parameters_folder + "/public-key.txt", clientPublicKey, SerType::BINARY)) {
         cerr << "I cannot read serialized data from public-key.txt" << endl;
         exit(1);
     }
 
     PrivateKey<DCRTPoly> serverSecretKey;
-    if (!Serial::DeserializeFromFile("../parameters/secret-key.txt", serverSecretKey, SerType::BINARY)) {
+    if (!Serial::DeserializeFromFile("../" + parameters_folder + "/secret-key.txt", serverSecretKey, SerType::BINARY)) {
         cerr << "I cannot read serialized data from public-key.txt" << endl;
         exit(1);
     }
@@ -120,7 +120,7 @@ void FHEController::load_context() {
     key_pair.publicKey = clientPublicKey;
     key_pair.secretKey = serverSecretKey;
 
-    std::ifstream multKeyIStream("../parameters/mult-keys.txt", ios::in | ios::binary);
+    std::ifstream multKeyIStream("../" + parameters_folder + "/mult-keys.txt", ios::in | ios::binary);
     if (!multKeyIStream.is_open()) {
         cerr << "Cannot read serialization from " << "mult-keys.txt" << endl;
         exit(1);
@@ -155,7 +155,7 @@ void FHEController::generate_rotation_keys(vector<int> rotations, bool serialize
     context->EvalRotateKeyGen(key_pair.secretKey, rotations);
 
     if (serialize) {
-        ofstream rotationKeyFile("../parameters/rot_" + filename, ios::out | ios::binary);
+        ofstream rotationKeyFile("../" + parameters_folder + "/rot_" + filename, ios::out | ios::binary);
         if (rotationKeyFile.is_open()) {
             if (!context->SerializeEvalAutomorphismKey(rotationKeyFile, SerType::BINARY)) {
                 cerr << "Error writing rotation keys" << std::endl;
@@ -163,7 +163,7 @@ void FHEController::generate_rotation_keys(vector<int> rotations, bool serialize
             }
             cout << "Rotation keys have been serialized" << std::endl;
         } else {
-            cerr << "Error serializing Rotation keys" << "../parameters/rot_" + filename << std::endl;
+            cerr << "Error serializing Rotation keys" << "../" + parameters_folder + "/rot_" + filename << std::endl;
             exit(1);
         }
     }
@@ -189,9 +189,9 @@ void FHEController::load_bootstrapping_and_rotation_keys(const string& filename,
     cout << "(1/2) Bootstrapping precomputations completed!" << endl;
 
 
-    ifstream rotKeyIStream("../parameters/rot_" + filename, ios::in | ios::binary);
+    ifstream rotKeyIStream("../" + parameters_folder + "/rot_" + filename, ios::in | ios::binary);
     if (!rotKeyIStream.is_open()) {
-        cerr << "Cannot read serialization from " << "../parameters/" << "rot_" << filename << std::endl;
+        cerr << "Cannot read serialization from " << "../" + parameters_folder + "/" << "rot_" << filename << std::endl;
         exit(1);
     }
 
@@ -212,9 +212,9 @@ void FHEController::load_rotation_keys(const string& filename) {
 
     auto start = start_time();
 
-    ifstream rotKeyIStream("../parameters/rot_" + filename, ios::in | ios::binary);
+    ifstream rotKeyIStream("../" + parameters_folder + "/rot_" + filename, ios::in | ios::binary);
     if (!rotKeyIStream.is_open()) {
-        cerr << "Cannot read serialization from " << "../parameters/" << "rot_" << filename << std::endl;
+        cerr << "Cannot read serialization from " << "../" + parameters_folder + "/" << "rot_" << filename << std::endl;
         exit(1);
     }
 
@@ -351,16 +351,11 @@ Ctxt FHEController::relu(const Ctxt &c, double scale, bool timing) {
      * Max min
      */
 
-    int degree;
-    //degree = 59;
-    degree = 119;
-    //degree = 27;
-
     Ctxt res = context->EvalChebyshevFunction([scale](double x) -> double { if (x < 0) return 0; else return (1 / scale) * x; }, c,
                                               -1,
-                                              1, degree);
+                                              1, relu_degree);
     if (timing) {
-        print_duration(start, "ReLU d = " + to_string(degree) + " evaluation");
+        print_duration(start, "ReLU d = " + to_string(relu_degree) + " evaluation");
     }
 
     return res;
@@ -405,7 +400,7 @@ Ctxt FHEController::read_input(const string& filename, double scale) {
         }
     }
 
-    return context->Encrypt(key_pair.publicKey, context->MakeCKKSPackedPlaintext(input, 1, circuit_depth - 2, nullptr, num_slots));
+    return context->Encrypt(key_pair.publicKey, context->MakeCKKSPackedPlaintext(input, 1, circuit_depth - 10, nullptr, num_slots));
 }
 
 void FHEController::print(const Ctxt &c, int slots, string prefix) {
@@ -495,6 +490,73 @@ void FHEController::print_min_max(const Ctxt &c) {
 /*
  * Convolutional Neural Network functions
  */
+Ctxt FHEController::convbn_initial(const Ctxt &in, double scale, bool timing) {
+    auto start = start_time();
+
+    vector<Ctxt> c_rotations;
+
+    int img_width = 32;
+    int padding = 1;
+
+    auto digits = context->EvalFastRotationPrecompute(in);
+
+    c_rotations.push_back(
+            context->EvalRotate(context->EvalFastRotation(in, -padding, context->GetCyclotomicOrder(), digits), -img_width ));
+    c_rotations.push_back(context->EvalFastRotation(in, -img_width, context->GetCyclotomicOrder(), digits));
+    c_rotations.push_back(
+            context->EvalRotate(context->EvalFastRotation(in, padding, context->GetCyclotomicOrder(), digits), -img_width ));
+    c_rotations.push_back(context->EvalFastRotation(in, -padding, context->GetCyclotomicOrder(), digits));
+    c_rotations.push_back(in);
+    c_rotations.push_back(context->EvalFastRotation(in, padding, context->GetCyclotomicOrder(), digits));
+    c_rotations.push_back(
+            context->EvalRotate(context->EvalFastRotation(in, -padding, context->GetCyclotomicOrder(), digits), img_width));
+    c_rotations.push_back(context->EvalFastRotation(in, img_width, context->GetCyclotomicOrder(), digits));
+    c_rotations.push_back(
+            context->EvalRotate(context->EvalFastRotation(in, padding, context->GetCyclotomicOrder(), digits), img_width ));
+
+    Ptxt bias = encode(read_values_from_file("../weights/conv1bn1-bias.bin", scale), in->GetLevel(), 16384);
+
+    Ctxt finalsum;
+
+    for (int j = 0; j < 16; j++) {
+        vector<Ctxt> k_rows;
+
+        for (int k = 0; k < 9; k++) {
+            vector<double> values = read_values_from_file("../weights/conv1bn1-ch" +
+                                                          to_string(j) + "-k" + to_string(k+1) + ".bin", scale);
+            Ptxt encoded = encode(values, in->GetLevel(), 16384);
+            k_rows.push_back(context->EvalMult(c_rotations[k], encoded));
+        }
+
+        Ctxt sum = context->EvalAddMany(k_rows);
+
+        Ctxt res = sum->Clone();
+
+        res = add(res, context->EvalRotate(sum, 1024));
+        res = add(res, context->EvalRotate(context->EvalRotate(sum, 1024), 1024));
+        res = mult(res, mask_from_to(0, 1024, res->GetLevel()));
+
+
+        if (j == 0) {
+            finalsum = res->Clone();
+            finalsum = context->EvalRotate(finalsum, 1024);
+        } else {
+            finalsum = context->EvalAdd(finalsum, res);
+            finalsum = context->EvalRotate(finalsum, 1024);
+        }
+
+    }
+
+    finalsum = context->EvalAdd(finalsum, bias);
+
+    if (timing) {
+        print_duration(start, "Initial layer");
+    }
+
+
+    return finalsum;
+}
+
 Ctxt FHEController::convbn(const Ctxt &in, int layer, int n, double scale, bool timing) {
     auto start = start_time();
 
@@ -519,7 +581,7 @@ Ctxt FHEController::convbn(const Ctxt &in, int layer, int n, double scale, bool 
     c_rotations.push_back(
             context->EvalRotate(context->EvalFastRotation(in, padding, context->GetCyclotomicOrder(), digits), img_width ));
 
-    Ptxt bias = encode(read_values_from_file("../weights/layer" + to_string(layer) + "-conv" + to_string(n) + "bn" + to_string(n) + "-bias.bin", 0.5), in->GetLevel(), 16384);
+    Ptxt bias = encode(read_values_from_file("../weights/layer" + to_string(layer) + "-conv" + to_string(n) + "bn" + to_string(n) + "-bias.bin", scale), in->GetLevel(), 16384);
 
     Ctxt finalsum;
 
@@ -577,7 +639,7 @@ Ctxt FHEController::convbn2(const Ctxt &in, int layer, int n, double scale, bool
     c_rotations.push_back(
             context->EvalRotate(context->EvalFastRotation(in, padding, context->GetCyclotomicOrder(), digits), img_width ));
 
-    Ptxt bias = encode(read_values_from_file("../weights/layer" + to_string(layer) + "-conv" + to_string(n) + "bn" + to_string(n) + "-bias.bin", 0.5), circuit_depth-2, 8192);
+    Ptxt bias = encode(read_values_from_file("../weights/layer" + to_string(layer) + "-conv" + to_string(n) + "bn" + to_string(n) + "-bias.bin", scale), circuit_depth-2, 8192);
 
     Ctxt finalsum;
 
@@ -635,7 +697,7 @@ Ctxt FHEController::convbn3(const Ctxt &in, int layer, int n, double scale, bool
     c_rotations.push_back(
             context->EvalRotate(context->EvalFastRotation(in, padding, context->GetCyclotomicOrder(), digits), img_width ));
 
-    Ptxt bias = encode(read_values_from_file("../weights/layer" + to_string(layer) + "-conv" + to_string(n) + "bn" + to_string(n) + "-bias.bin", 0.5), c_rotations[0]->GetLevel(), 4096);
+    Ptxt bias = encode(read_values_from_file("../weights/layer" + to_string(layer) + "-conv" + to_string(n) + "bn" + to_string(n) + "-bias.bin", scale), c_rotations[0]->GetLevel(), 4096);
 
     Ctxt finalsum;
 
@@ -1181,7 +1243,7 @@ Ctxt FHEController::convbnV2(const Ctxt &in, int layer, int n, double scale, boo
     c_rotations.push_back(
             context->EvalRotate(context->EvalFastRotation(in, padding, context->GetCyclotomicOrder(), digits), img_width ));
 
-    Ptxt bias = encode(read_values_from_file("../weights/layer" + to_string(layer) + "-conv" + to_string(n) + "bn" + to_string(n) + "-bias.bin", 0.5), in->GetLevel(), 8192);
+    Ptxt bias = encode(read_values_from_file("../weights/layer" + to_string(layer) + "-conv" + to_string(n) + "bn" + to_string(n) + "-bias.bin", scale), in->GetLevel(), 8192);
 
     Ctxt finalsum;
 
@@ -1366,6 +1428,20 @@ Ptxt FHEController::mask_mod(int n, int level, double custom_val) {
     for (int i = 0; i < num_slots; i++) {
         if (i % n == 0) {
             vec.push_back(custom_val);
+        } else {
+            vec.push_back(0);
+        }
+    }
+
+    return encode(vec, level, num_slots);
+}
+
+Ptxt FHEController::mask_from_to(int from, int to, int level) {
+    vector<double> vec;
+
+    for (int i = 0; i < num_slots; i++) {
+        if (i >= from && i < to) {
+            vec.push_back(1);
         } else {
             vec.push_back(0);
         }

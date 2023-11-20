@@ -86,6 +86,7 @@ public:
     /*
      * Convolutional Neural Network functions
      */
+    Ctxt convbn_initial(const Ctxt &in, double scale = 0.5, bool timing = false);
     Ctxt convbn(const Ctxt &in, int layer, int n, double scale = 0.5, bool timing = false);
     Ctxt convbn2(const Ctxt &in, int layer, int n, double scale = 0.5, bool timing = false);
     Ctxt convbn3(const Ctxt &in, int layer, int n, double scale = 0.5, bool timing = false);
@@ -118,15 +119,20 @@ public:
     Ptxt mask_first_n_mod2(int n, int padding, int pos, int level);
     Ptxt mask_channel(int n, int level);
     Ptxt mask_channel_2(int n, int level);
+    Ptxt mask_from_to(int from, int to, int level);
 
     Ptxt mask_mod(int n, int level, double custom_val);
 
     void bootstrap_precision(const Ctxt& c);
 
+    int relu_degree = 119;
+    string parameters_folder = "parameters_thirdexp";
 
 private:
     KeyPair<DCRTPoly> key_pair;
     vector<uint32_t> level_budget = {4, 4};
+
+
 };
 
 

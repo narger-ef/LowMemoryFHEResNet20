@@ -1,28 +1,33 @@
 #include <iostream>
 #include "FHEController.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 void check_arguments(int argc, char *argv[], bool default_generate);
+vector<double> read_jpg_image(const char *filename);
 
 void executeResNet20(const string& filename);
+
+
+Ctxt initial_layer(const Ctxt& in);
 Ctxt layer1(const Ctxt& in);
 Ctxt layer2(const Ctxt& in);
 Ctxt layer3(const Ctxt& in);
-Ctxt finalLayer(const Ctxt& in);
+Ctxt final_layer(const Ctxt& in);
 
 FHEController controller;
 
 bool generate_context;
+string input_filename;
 
 /*
  * TODO:
  * 1) Migliorare convbn sfruttando tutti gli slot del ciphertext
- * 2) Completare anche con layer3 (magari prendi l'output di layer 2 in chiaro così non ti fottono gli errori)
  */
 
 int main(int argc, char *argv[]) {
-    //TODO: prova con ReLU a 119
     //TODO: possibile che il bootstrap a 8192 ci metta lo stesso tempo? indaga
-    //TODO: Riga 327 di ckksrns-fhe.cpp, quella moltiplicazione posso inglobarla nei miei calcoli? Per fare una mult in meno
 
     check_arguments(argc, argv, false);
 
@@ -60,9 +65,6 @@ int main(int argc, char *argv[]) {
 
     } else {
         controller.load_context();
-        controller.load_bootstrapping_and_rotation_keys("rotations-layer1.bin", 16384);
-        //Un-comment if you start from Layer 3
-        //controller.load_bootstrapping_and_rotation_keys("rotations-layer2.bin", 8192);
     }
 
     executeResNet20("../test_images/input_louis.bin");
@@ -70,34 +72,63 @@ int main(int argc, char *argv[]) {
 
 void executeResNet20(const string& filename) {
     cout << "Starting ResNet20 classification." << endl;
-    Ctxt in = controller.read_input(filename);
 
-    Ctxt resLayer1, resLayer2, resLayer3, finalRes;
+    Ctxt firstLayer, resLayer1, resLayer2, resLayer3, finalRes;
 
     auto start = start_time();
 
-    resLayer1 = layer1(in);
+    bool print_intermediate_values = true;
+    bool print_bootstrap_precision = false;
+
+    if (input_filename.empty()) {
+        input_filename = "../inputs/louis.jpg";
+        cout << "You did not set any input, I use ../'inputs/louis.jpg'." << endl;
+    }
+
+    vector<double> input_image = read_jpg_image(input_filename.c_str());
+
+    Ctxt in = controller.encrypt(input_image, controller.circuit_depth - 4 - get_relu_depth(controller.relu_degree));
+
+    controller.load_bootstrapping_and_rotation_keys("rotations-layer1.bin", 16384);
+
+    if (print_bootstrap_precision){
+        controller.bootstrap_precision(in);
+    }
+
+    firstLayer = initial_layer(in);
+
+    resLayer1 = layer1(firstLayer);
     Serial::SerializeToFile("../checkpoints/layer1.bin", resLayer1, SerType::BINARY);
-    controller.print(resLayer1, 16384, "Layer1: ");
+    if (print_intermediate_values) controller.print(resLayer1, 16384, "Layer 1: ");
 
     Serial::DeserializeFromFile("../checkpoints/layer1.bin", resLayer1, SerType::BINARY);
     resLayer2 = layer2(resLayer1);
     Serial::SerializeToFile("../checkpoints/layer2.bin", resLayer2, SerType::BINARY);
+    if (print_intermediate_values) controller.print(resLayer2, 8192, "Layer 2: ");
 
     Serial::DeserializeFromFile("../checkpoints/layer2.bin", resLayer2, SerType::BINARY);
     resLayer3 = layer3(resLayer2);
     Serial::SerializeToFile("../checkpoints/layer3.bin", resLayer3, SerType::BINARY);
+    if (print_intermediate_values) controller.print(resLayer3, 4096, "Layer 3: ");
 
     Serial::DeserializeFromFile("../checkpoints/layer3.bin", resLayer3, SerType::BINARY);
-    finalRes = finalLayer(resLayer3);
+    finalRes = final_layer(resLayer3);
     Serial::SerializeToFile("../checkpoints/finalres.bin", finalRes, SerType::BINARY);
 
     print_duration(start, "Whole network");
 }
 
-Ctxt finalLayer(const Ctxt& in) {
+Ctxt initial_layer(const Ctxt& in) {
+    double scale = 0.5;
+
+    Ctxt res = controller.convbn_initial(in, scale, true);
+    res = controller.relu(res, scale, true);
+
+    return res;
+}
+
+Ctxt final_layer(const Ctxt& in) {
     controller.clear_bootstrapping_and_rotation_keys(4096);
-    //controller.generate_rotation_keys({1, 2, 4, 8, 16, 32, -15, 64, 128, 256, 512, 1024, 2048}, true, "rotations-finallayer.bin");
     controller.load_rotation_keys("rotations-finallayer.bin");
 
     controller.num_slots = 4096;
@@ -112,7 +143,6 @@ Ctxt finalLayer(const Ctxt& in) {
     res = controller.mult(res, weight);
     res = controller.rotsum_padded(res, 64);
 
-    cout << "Expected:  [ -1.3003707473, -2.6922762493,  1.7660588576,  0.9481022234, -4.3456770206,  0.1051018753,  2.1237186188, -0.4821936702,  5.1143611199, -1.2396680442 ]" << endl;
     controller.print(res, 10, "FC Output: ");
 
     return res;
@@ -170,9 +200,9 @@ Ctxt layer3(const Ctxt& in) {
     res3 = controller.bootstrap(res3, true);
     res3 = controller.relu(res3, scale, true);
     res3 = controller.convbn3(res3, 9, 2, scale, true);
-    res3 = controller.add(res3, controller.mult(res2, scale));
+    res3 = controller.add(res3, controller.mult(res2, 0.2));
     res3 = controller.bootstrap(res3, true);
-    res3 = controller.relu_wide(res3, -1.1, 2.8, 59, scale, true);
+    res3 = controller.relu(res3, 0.2, true);
     res3 = controller.bootstrap(res3, true);
     print_duration(start, "Total");
     cout << "---End  : Layer3 - Block 3---" << endl;
@@ -250,46 +280,12 @@ Ctxt layer1(const Ctxt& in) {
     auto start = start_time();
     Ctxt res1;
     res1 = controller.convbn(in, 1, 1, scale, true);
-
-    //vector<double> v = controller.decrypt(res1)->GetRealPackedValue();
-    //cout << "min: " << *min_element(v.begin(), v.end()) << ", max: " << *max_element(v.begin(), v.end()) << endl;
-    //controller.bootstrap_precision(res1);
-
-    //res1 = controller.encrypt({0.95341, -0.9954812, 0.100000421, 0.29009321, 0.344441412, -0.1, -0.2, -0.3}, controller.circuit_depth - 2);
-    //controller.bootstrap_precision(res1);
-
-    //res1 = controller.encrypt({1, -1}, controller.circuit_depth - 2);
-    //controller.bootstrap_precision(res1);
-    //exit(1);
-
-    /*
-    res1 = controller.encrypt({1, -1, 0.1, 0.2, 0.3, -0.1, -0.2, -0.3}, controller.circuit_depth - 2);
-    vector<double> v = controller.decrypt(res1)->GetRealPackedValue();
-    cout << "min: " << *min_element(v.begin(), v.end()) << ", max: " << *max_element(v.begin(), v.end()) << endl;
-    //controller.print(res1, 10);
-    controller.bootstrap_precision(res1);
-    //Precision: 3.109 con 44, 45
-
-
-    controller.print(res1, 10);
-    res1 = controller.bootstrap(res1,  true);
-    controller.print(res1, 10);
-    exit(1);
-    */
-
-    controller.bootstrap_precision(res1);
     res1 = controller.bootstrap(res1, true);
-    controller.print(res1, 10);
     res1 = controller.relu(res1, scale, true);
-    controller.print(res1, 10);
     res1 = controller.convbn(res1, 1, 2, scale, true);
-    controller.print(res1, 10);
     res1 = controller.add(res1, controller.mult(in, scale));
-    controller.print(res1, 10);
     res1 = controller.bootstrap(res1, true);
-    controller.print(res1, 10);
     res1 = controller.relu(res1, scale, true);
-    controller.print(res1, 10);
     print_duration(start, "Total");
     cout << "---End  : Layer1 - Block 1---" << endl;
 
@@ -327,19 +323,50 @@ void check_arguments(int argc, char *argv[], bool default_generate) {
     for (int i = 1; i < argc; ++i) {
         if (string(argv[i]) == "context") {
             if (i + 1 < argc) { // Verifica se c'è un argomento successivo a "context"
-                if (string(argv[i + 1]) == "generate") {
-                    generate_context = true;
-                    return;
-                } else if (string(argv[i + 1]) == "load") {
-                    generate_context = false;
-                    return;
-                } else {
-                    cerr << R"(Unknown option passed to "context", insert either "generate" or "load")" << endl;
-                    exit(1);
-                }
+                controller.parameters_folder = string(argv[i + 1]);
+                cout << "Context folder set to: \"" << controller.parameters_folder << "\"." << endl;
+                generate_context = false;
+            }
+        }
+        if (string(argv[i]) == "input") {
+            if (i + 1 < argc) { // Verifica se c'è un argomento successivo a "input"
+                input_filename = "../" + string(argv[i + 1]);
+                cout << "Input image set to: \"" << input_filename << "\"." << endl;
             }
         }
     }
 
     generate_context = default_generate;
+}
+
+vector<double> read_jpg_image(const char *filename) {
+    int width = 32;
+    int height = 32;
+    int channels = 3;
+    unsigned char* image_data = stbi_load(filename, &width, &height, &channels, 0);
+
+    if (!image_data) {
+        cerr << "Could not load the image in " << filename << endl;
+        return vector<double>();
+    }
+
+    vector<double> imageVector;
+    imageVector.reserve(width * height * channels);
+
+    for (int i = 0; i < width * height; ++i) {
+        //Channel R
+        imageVector.push_back(static_cast<double>(image_data[3 * i]) / 255.0f);
+    }
+    for (int i = 0; i < width * height; ++i) {
+        //Channel G
+        imageVector.push_back(static_cast<double>(image_data[1 + 3 * i]) / 255.0f);
+    }
+    for (int i = 0; i < width * height; ++i) {
+        //Channel B
+        imageVector.push_back(static_cast<double>(image_data[2 + 3 * i]) / 255.0f);
+    }
+
+    stbi_image_free(image_data);
+
+    return imageVector;
 }
