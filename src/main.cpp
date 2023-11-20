@@ -5,7 +5,7 @@
 #include "stb_image.h"
 
 void check_arguments(int argc, char *argv[], bool default_generate);
-vector<double> read_jpg_image(const char *filename);
+vector<double> read_image(const char *filename);
 
 void executeResNet20(const string& filename);
 
@@ -85,7 +85,7 @@ void executeResNet20(const string& filename) {
         cout << "You did not set any input, I use ../'inputs/louis.jpg'." << endl;
     }
 
-    vector<double> input_image = read_jpg_image(input_filename.c_str());
+    vector<double> input_image = read_image(input_filename.c_str());
 
     Ctxt in = controller.encrypt(input_image, controller.circuit_depth - 4 - get_relu_depth(controller.relu_degree));
 
@@ -149,7 +149,7 @@ Ctxt final_layer(const Ctxt& in) {
 }
 
 Ctxt layer3(const Ctxt& in) {
-    double scale = 0.5;
+    double scale = 0.4;
 
     cout << "---Start: Layer3 - Block 1---" << endl;
     auto start = start_time();
@@ -199,10 +199,11 @@ Ctxt layer3(const Ctxt& in) {
     res3 = controller.convbn3(res2, 9, 1, scale, true);
     res3 = controller.bootstrap(res3, true);
     res3 = controller.relu(res3, scale, true);
-    res3 = controller.convbn3(res3, 9, 2, scale, true);
-    res3 = controller.add(res3, controller.mult(res2, 0.2));
+
+    res3 = controller.convbn3(res3, 9, 2, 0.1, true);
+    res3 = controller.add(res3, controller.mult(res2, 0.1));
     res3 = controller.bootstrap(res3, true);
-    res3 = controller.relu(res3, 0.2, true);
+    res3 = controller.relu(res3, 0.1, true);
     res3 = controller.bootstrap(res3, true);
     print_duration(start, "Total");
     cout << "---End  : Layer3 - Block 3---" << endl;
@@ -213,7 +214,7 @@ Ctxt layer3(const Ctxt& in) {
 }
 
 Ctxt layer2(const Ctxt& in) {
-    double scale = 0.5;
+    double scale = 0.4;
 
     cout << "---Start: Layer2 - Block 1---" << endl;
     auto start = start_time();
@@ -274,7 +275,7 @@ Ctxt layer2(const Ctxt& in) {
 }
 
 Ctxt layer1(const Ctxt& in) {
-    double scale = 0.5;
+    double scale = 0.4;
 
     cout << "---Start: Layer1 - Block 1---" << endl;
     auto start = start_time();
@@ -339,7 +340,7 @@ void check_arguments(int argc, char *argv[], bool default_generate) {
     generate_context = default_generate;
 }
 
-vector<double> read_jpg_image(const char *filename) {
+vector<double> read_image(const char *filename) {
     int width = 32;
     int height = 32;
     int channels = 3;
