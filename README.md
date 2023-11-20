@@ -1,5 +1,5 @@
 # Low Memory FHE-based ResNet20
-This repository contains a OpenFHE-based project that implements an encrypted version of the ResNet20 model, used to classify encrypted CIFAR10 images. 
+This repository contains a OpenFHE-based project that implements an encrypted version of the ResNet20 model, used to classify encrypted CIFAR10 images. The reference paper for this work is [Low memory overhead secure ResNet inference based on Fully Homomorphic Encryption](google.it), (2023, Lorenzo Rovida and Alberto Leporati).
 
 The key idea behind this work is to propose a solution to run a CNN in relative small time (<5 mins on my Macbook M1 Pro) and, moreover, to use a small amount of RAM. Existing works use a lot of memory ([1]: $\approx$ 100GB, [2]: $\approx$ 500GB), while this implementation uses at most 16GB.
 
@@ -52,7 +52,11 @@ Lastly, in order to load a custom image, we use the argument `input` as follows:
 ```
 Even for this argument, the starting position will be the root of the project.
 
-### Bibliography 
+---
+
+## Bibliography 
 [1] D. Kim and C. Guyot, "Optimized Privacy-Preserving CNN Inference With Fully Homomorphic Encryption," in IEEE Transactions on Information Forensics and Security, vol. 18, pp. 2175-2187, 2023, doi: 10.1109/TIFS.2023.3263631.
 
 [2] Lee, E., Lee, J. W., Lee, J., Kim, Y. S., Kim, Y., No, J. S., & Choi, W. (2022, June). Low-complexity deep convolutional neural networks on fully homomorphic encryption using multiplexed parallel convolutions. In International Conference on Machine Learning (pp. 12403-12422). PMLR.
+
+[3] L. Rovida and A. Leporati, “Low memory overhead secure ResNet inference based on Fully Homomorphic Encryption,” International Journal of Neural Systems, vol. X, no. X, pp. XXX–XXX, 2023, doi: 10.XXXX/ijns.XXXX.XXXX.
