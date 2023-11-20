@@ -57,6 +57,7 @@ checkpoints
 .DS_Store
 .DS_Store?
 ._*
+.idea
 .Spotlight-V100
 .Trashes
 ehthumbs.db
