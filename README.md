@@ -53,6 +53,31 @@ Lastly, in order to load a custom image, we use the argument `input`. Notice tha
 ```
 Even for this argument, the starting position will be the root of the project.
 
+## Interpreting the output
+The output of the encrypted model is a vector consisting of 10 elements. In order to interpret it, it is enough to find the index of the maximum element. A sample output could be:
+
+```
+[7.2524807010, -2.6369680214, -1.0997904940,  6.0638060424, -4.0936126151, -0.5967846282, -2.1562481052, -1.0855666688, -0.9119194165, -0.7291559490 ]
+```
+In this case, the maximum value is at position 0. Just translate it using the following dictionary (from ResNet20 pretrained on CIFAR-10):
+
+- 0: airplane
+- 1: automobile
+- 2: bird
+- 3: cat
+- 4: deer
+- 5: dog
+- 6: frog
+- 7: horse
+- 8: ship
+- 9: truck
+
+In the sample output, the classified image was the following:
+
+<img src="inputs/airplane4.png" alt="Sample airplane input" width=8%>
+
+So it was correct!
+
 ---
 
 ## Bibliography 
