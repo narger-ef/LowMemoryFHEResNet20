@@ -47,6 +47,7 @@ _deps
 cmake-build-debug
 cmake-build-release
 parameters
+parameters_fourthexp
 checkpoints
 
 # OS generated files #

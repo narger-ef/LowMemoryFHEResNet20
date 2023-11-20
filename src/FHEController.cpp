@@ -9,16 +9,19 @@ void FHEController::generate_context(bool serialize) {
 
     num_slots = 1 << 14;
 
-    parameters.SetSecretKeyDist(UNIFORM_TERNARY);
-    parameters.SetSecurityLevel(lbcrypto::HEStd_NotSet);
+    parameters.SetSecretKeyDist(SPARSE_TERNARY);
+    parameters.SetSecurityLevel(lbcrypto::HEStd_128_classic);
+    //parameters.SetSecurityLevel(lbcrypto::HEStd_NotSet);
+    parameters.SetNumLargeDigits(3); //d_{num} Se lo riduci, aumenti il logQP, se lo aumenti, aumenti memori
     parameters.SetRingDim(1 << 16);
     parameters.SetBatchSize(num_slots);
 
-    //TODO: try with 46, 51
 
     ScalingTechnique rescaleTech = FLEXIBLEAUTO;
-    usint dcrtBits               = 59;
-    usint firstMod               = 60;
+
+    //55, 56 fa un bootstrap con precisione di 8.6
+    int dcrtBits               = 47;
+    int firstMod               = 52; //45: 4.XX - 48: 7.84 - 51: 8.07:
 
     parameters.SetScalingModSize(dcrtBits);
     parameters.SetScalingTechnique(rescaleTech);
@@ -26,9 +29,9 @@ void FHEController::generate_context(bool serialize) {
 
     uint32_t approxBootstrapDepth     = 8;
 
-    uint32_t levelsUsedBeforeBootstrap = 9;
+    uint32_t levelsUsedBeforeBootstrap = 10;
 
-    circuit_depth = levelsUsedBeforeBootstrap + FHECKKSRNS::GetBootstrapDepth(approxBootstrapDepth, level_budget, UNIFORM_TERNARY);
+    circuit_depth = levelsUsedBeforeBootstrap + FHECKKSRNS::GetBootstrapDepth(approxBootstrapDepth, level_budget, SPARSE_TERNARY);
 
     cout << endl << "Ciphertexts depth: " << circuit_depth << ", available multiplications: " << levelsUsedBeforeBootstrap - 2 << endl;
 
@@ -129,16 +132,16 @@ void FHEController::load_context() {
 
     uint32_t approxBootstrapDepth = 8;
 
-    uint32_t levelsUsedBeforeBootstrap = 9;
+    uint32_t levelsUsedBeforeBootstrap = 10;
 
-    circuit_depth = levelsUsedBeforeBootstrap + FHECKKSRNS::GetBootstrapDepth(approxBootstrapDepth, level_budget, UNIFORM_TERNARY);
+    circuit_depth = levelsUsedBeforeBootstrap + FHECKKSRNS::GetBootstrapDepth(approxBootstrapDepth, level_budget, SPARSE_TERNARY);
 
     cout << "Circuit depth: " << circuit_depth << ", available multiplications: " << levelsUsedBeforeBootstrap - 2 << endl;
 
     num_slots = 1 << 14;
 }
 
-void FHEController::generate_bootstrapping_keys(usint bootstrap_slots) {
+void FHEController::generate_bootstrapping_keys(int bootstrap_slots) {
     context->EvalBootstrapSetup(level_budget, {0, 0}, bootstrap_slots);
     context->EvalBootstrapKeyGen(key_pair.secretKey, bootstrap_slots);
 }
@@ -151,21 +154,22 @@ void FHEController::generate_rotation_keys(vector<int> rotations, bool serialize
 
     context->EvalRotateKeyGen(key_pair.secretKey, rotations);
 
-    ofstream rotationKeyFile("../parameters/rot_" + filename, ios::out | ios::binary);
-    if (rotationKeyFile.is_open()) {
-        if (!context->SerializeEvalAutomorphismKey(rotationKeyFile, SerType::BINARY)) {
-            cerr << "Error writing rotation keys" << std::endl;
+    if (serialize) {
+        ofstream rotationKeyFile("../parameters/rot_" + filename, ios::out | ios::binary);
+        if (rotationKeyFile.is_open()) {
+            if (!context->SerializeEvalAutomorphismKey(rotationKeyFile, SerType::BINARY)) {
+                cerr << "Error writing rotation keys" << std::endl;
+                exit(1);
+            }
+            cout << "Rotation keys have been serialized" << std::endl;
+        } else {
+            cerr << "Error serializing Rotation keys" << "../parameters/rot_" + filename << std::endl;
             exit(1);
         }
-        cout << "Rotation keys have been serialized" << std::endl;
-    }
-    else {
-        cerr << "Error serializing Rotation keys" << "../parameters/rot_" + filename << std::endl;
-        exit(1);
     }
 }
 
-void FHEController::generate_bootstrapping_and_rotation_keys(vector<int> rotations, usint bootstrap_slots, bool serialize, const string& filename) {
+void FHEController::generate_bootstrapping_and_rotation_keys(vector<int> rotations, int bootstrap_slots, bool serialize, const string& filename) {
     if (serialize && filename.empty()) {
         cout << "Filename cannot be empty when serializing bootstrapping and rotation keys." << endl;
         return;
@@ -175,7 +179,7 @@ void FHEController::generate_bootstrapping_and_rotation_keys(vector<int> rotatio
     generate_rotation_keys(rotations, serialize, filename);
 }
 
-void FHEController::load_bootstrapping_and_rotation_keys(const string& filename, usint bootstrap_slots) {
+void FHEController::load_bootstrapping_and_rotation_keys(const string& filename, int bootstrap_slots) {
     cout << endl << "Loading bootstrapping and rotations keys from " << filename << "..." << endl;
 
     auto start = start_time();
@@ -226,9 +230,9 @@ void FHEController::load_rotation_keys(const string& filename) {
     cout << endl;
 }
 
-void FHEController::clear_bootstrapping_and_rotation_keys(usint bootstrap_num_slots) {
-    FHECKKSRNS* derivedPtr = dynamic_cast<FHECKKSRNS*>(context->GetScheme()->GetFHE().get());
-    derivedPtr->m_bootPrecomMap.erase(bootstrap_num_slots);
+void FHEController::clear_bootstrapping_and_rotation_keys(int bootstrap_num_slots) {
+    //FHECKKSRNS* derivedPtr = dynamic_cast<FHECKKSRNS*>(context->GetScheme()->GetFHE().get());
+    //derivedPtr->m_bootPrecomMap.erase(bootstrap_num_slots);
     context->ClearEvalAutomorphismKeys();
 }
 
@@ -239,7 +243,7 @@ void FHEController::clear_rotation_keys() {
 /*
  * CKKS Encoding/Decoding/Encryption/Decryption
  */
-Ptxt FHEController::encode(const vector<double> &vec, usint level, usint plaintext_num_slots) {
+Ptxt FHEController::encode(const vector<double> &vec, int level, int plaintext_num_slots) {
     if (plaintext_num_slots == 0) {
         plaintext_num_slots = num_slots;
     }
@@ -249,7 +253,7 @@ Ptxt FHEController::encode(const vector<double> &vec, usint level, usint plainte
     return p;
 }
 
-Ptxt FHEController::encode(double val, usint level, usint plaintext_num_slots) {
+Ptxt FHEController::encode(double val, int level, int plaintext_num_slots) {
     if (plaintext_num_slots == 0) {
         plaintext_num_slots = num_slots;
     }
@@ -264,7 +268,7 @@ Ptxt FHEController::encode(double val, usint level, usint plaintext_num_slots) {
     return p;
 }
 
-Ctxt FHEController::encrypt(const vector<double> &vec, usint level, usint plaintext_num_slots) {
+Ctxt FHEController::encrypt(const vector<double> &vec, int level, int plaintext_num_slots) {
     if (plaintext_num_slots == 0) {
         plaintext_num_slots = num_slots;
     }
@@ -272,6 +276,16 @@ Ctxt FHEController::encrypt(const vector<double> &vec, usint level, usint plaint
     Ptxt p = encode(vec, level, plaintext_num_slots);
 
     return context->Encrypt(p, key_pair.publicKey);
+}
+
+Ctxt FHEController::encrypt_ptxt(const Ptxt& p) {
+    return context->Encrypt(p, key_pair.publicKey);
+}
+
+Ptxt FHEController::decrypt(const Ctxt &c) {
+    Ptxt p;
+    context->Decrypt(key_pair.secretKey, c, &p);
+    return p;
 }
 
 /*
@@ -306,6 +320,22 @@ Ctxt FHEController::bootstrap(const Ctxt &c, bool timing) {
     return res;
 }
 
+Ctxt FHEController::bootstrap(const Ctxt &c, int precision, bool timing) {
+    if (c->GetLevel() + 2 < circuit_depth) {
+        cout << "You are bootstrapping with remaining levels! You are at " << to_string(c->GetLevel()) << "/" << circuit_depth - 2 << endl;
+    }
+
+    auto start = start_time();
+
+    Ctxt res = context->EvalBootstrap(c, 2, precision);
+
+    if (timing) {
+        print_duration(start, "Double Bootstrapping " + to_string(c->GetSlots()) + " slots");
+    }
+
+    return res;
+}
+
 Ctxt FHEController::relu(const Ctxt &c, double scale, bool timing) {
     auto start = start_time();
 
@@ -321,7 +351,11 @@ Ctxt FHEController::relu(const Ctxt &c, double scale, bool timing) {
      * Max min
      */
 
-    usint degree = 59;
+    int degree;
+    //degree = 59;
+    degree = 119;
+    //degree = 27;
+
     Ctxt res = context->EvalChebyshevFunction([scale](double x) -> double { if (x < 0) return 0; else return (1 / scale) * x; }, c,
                                               -1,
                                               1, degree);
@@ -332,7 +366,7 @@ Ctxt FHEController::relu(const Ctxt &c, double scale, bool timing) {
     return res;
 }
 
-Ctxt FHEController::relu_wide(const Ctxt &c, double a, double b, usint degree, double scale, bool timing) {
+Ctxt FHEController::relu_wide(const Ctxt &c, double a, double b, int degree, double scale, bool timing) {
     auto start = start_time();
 
     /*
@@ -374,7 +408,7 @@ Ctxt FHEController::read_input(const string& filename, double scale) {
     return context->Encrypt(key_pair.publicKey, context->MakeCKKSPackedPlaintext(input, 1, circuit_depth - 2, nullptr, num_slots));
 }
 
-void FHEController::print(const Ctxt &c, usint slots, string prefix) {
+void FHEController::print(const Ctxt &c, int slots, string prefix) {
     if (slots == 0) {
         slots = num_slots;
     }
@@ -412,7 +446,7 @@ void FHEController::print(const Ctxt &c, usint slots, string prefix) {
     cout << endl;
 }
 
-void FHEController::print_padded(const Ctxt &c, usint slots, usint padding, string prefix) {
+void FHEController::print_padded(const Ctxt &c, int slots, int padding, string prefix) {
     if (slots == 0) {
         slots = num_slots;
     }
@@ -448,6 +482,14 @@ void FHEController::print_padded(const Ctxt &c, usint slots, usint padding, stri
     }
 
     cout << endl;
+}
+
+void FHEController::print_min_max(const Ctxt &c) {
+    Ptxt result;
+    context->Decrypt(key_pair.secretKey, c, &result);
+    vector<double> v = result->GetRealPackedValue();
+
+    cout << "min: " << *min_element(v.begin(), v.end()) << ", max: " << *max_element(v.begin(), v.end()) << endl;
 }
 
 /*
@@ -1182,7 +1224,7 @@ Ctxt FHEController::convbnV2(const Ctxt &in, int layer, int n, double scale, boo
     return finalsum;
 }
 
-Ptxt FHEController::gen_mask(int n, usint level) {
+Ptxt FHEController::gen_mask(int n, int level) {
     vector<double> mask;
 
     int copy_interval = n;
@@ -1204,7 +1246,7 @@ Ptxt FHEController::gen_mask(int n, usint level) {
     return encode(mask, level, num_slots);
 }
 
-Ptxt FHEController::mask_first_n(int n, usint level) {
+Ptxt FHEController::mask_first_n(int n, int level) {
     vector<double> mask;
 
     for (int i = 0; i < num_slots; i++) {
@@ -1218,7 +1260,7 @@ Ptxt FHEController::mask_first_n(int n, usint level) {
     return encode(mask, level, num_slots);
 }
 
-Ptxt FHEController::mask_second_n(int n, usint level) {
+Ptxt FHEController::mask_second_n(int n, int level) {
     vector<double> mask;
 
     for (int i = 0; i < num_slots; i++) {
@@ -1232,7 +1274,7 @@ Ptxt FHEController::mask_second_n(int n, usint level) {
     return encode(mask, level, num_slots);
 }
 
-Ptxt FHEController::mask_first_n_mod(int n, int padding, int pos, usint level) {
+Ptxt FHEController::mask_first_n_mod(int n, int padding, int pos, int level) {
     vector<double> mask;
     for (int i = 0; i < 32; i++) {
         for (int j = 0; j < (pos * n); j++) {
@@ -1249,7 +1291,7 @@ Ptxt FHEController::mask_first_n_mod(int n, int padding, int pos, usint level) {
     return encode(mask, level, 16384 * 2);
 }
 
-Ptxt FHEController::mask_first_n_mod2(int n, int padding, int pos, usint level) {
+Ptxt FHEController::mask_first_n_mod2(int n, int padding, int pos, int level) {
     vector<double> mask;
     for (int i = 0; i < 64; i++) {
         for (int j = 0; j < (pos * n); j++) {
@@ -1266,7 +1308,7 @@ Ptxt FHEController::mask_first_n_mod2(int n, int padding, int pos, usint level) 
     return encode(mask, level, 8192 * 2);
 }
 
-Ptxt FHEController::mask_channel(int n, usint level) {
+Ptxt FHEController::mask_channel(int n, int level) {
     vector<double> mask;
 
     for (int i = 0; i < n; i++) {
@@ -1292,7 +1334,7 @@ Ptxt FHEController::mask_channel(int n, usint level) {
     return encode(mask, level, 16384 * 2);
 }
 
-Ptxt FHEController::mask_channel_2(int n, usint level) {
+Ptxt FHEController::mask_channel_2(int n, int level) {
     vector<double> mask;
 
     for (int i = 0; i < n; i++) {
@@ -1318,7 +1360,7 @@ Ptxt FHEController::mask_channel_2(int n, usint level) {
     return encode(mask, level, 8192 * 2);
 }
 
-Ptxt FHEController::mask_mod(int n, usint level, double custom_val) {
+Ptxt FHEController::mask_mod(int n, int level, double custom_val) {
     vector<double> vec;
 
     for (int i = 0; i < num_slots; i++) {
@@ -1330,4 +1372,13 @@ Ptxt FHEController::mask_mod(int n, usint level, double custom_val) {
     }
 
     return encode(vec, level, num_slots);
+}
+
+void FHEController::bootstrap_precision(const Ctxt &c) {
+    cout << "Computing boostrap precision..." << endl;
+
+    Ptxt a = decrypt(c);
+    Ptxt b = decrypt(bootstrap(c));
+
+    cout << "Precision: " << to_string(utils::compute_approx_error(a, b)) << endl;
 }

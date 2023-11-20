@@ -28,6 +28,12 @@ int main(int argc, char *argv[]) {
 
     if (generate_context) {
         controller.generate_context(true);
+
+        cout << "Context built." << endl;
+
+        controller.generate_bootstrapping_and_rotation_keys({1, -1, 32, -32, -1024},
+                                                            16384,
+                                                            true, "rotations-layer1.bin");
         /*
         controller.generate_bootstrapping_and_rotation_keys({1, -1, 32, -32, -1024},
                                                             16384,
@@ -47,6 +53,8 @@ int main(int argc, char *argv[]) {
                                           4096,
                                           true,
                                           "rotations-layer3.bin");
+
+        controller.generate_rotation_keys({1, 2, 4, 8, 16, 32, -15, 64, 128, 256, 512, 1024, 2048}, true, "rotations-finallayer.bin");
 
         */
 
@@ -70,6 +78,7 @@ void executeResNet20(const string& filename) {
 
     resLayer1 = layer1(in);
     Serial::SerializeToFile("../checkpoints/layer1.bin", resLayer1, SerType::BINARY);
+    controller.print(resLayer1, 16384, "Layer1: ");
 
     Serial::DeserializeFromFile("../checkpoints/layer1.bin", resLayer1, SerType::BINARY);
     resLayer2 = layer2(resLayer1);
@@ -81,6 +90,7 @@ void executeResNet20(const string& filename) {
 
     Serial::DeserializeFromFile("../checkpoints/layer3.bin", resLayer3, SerType::BINARY);
     finalRes = finalLayer(resLayer3);
+    Serial::SerializeToFile("../checkpoints/finalres.bin", finalRes, SerType::BINARY);
 
     print_duration(start, "Whole network");
 }
@@ -109,8 +119,6 @@ Ctxt finalLayer(const Ctxt& in) {
 }
 
 Ctxt layer3(const Ctxt& in) {
-    cout << "Expected: [  0.0010650244, -0.0032426584, -0.0019287463, -0.0013246684,  0.0000994662,  ...]" << endl;
-
     double scale = 0.5;
 
     cout << "---Start: Layer3 - Block 1---" << endl;
@@ -118,15 +126,19 @@ Ctxt layer3(const Ctxt& in) {
     Ctxt boot_in = controller.bootstrap(in, true);
     vector<Ctxt> res1sx = controller.convbn3264sx(boot_in, 7, 1, scale, true); //Questo è lento
     vector<Ctxt> res1dx = controller.convbn3264dx(boot_in, 7, 1, scale, true); //Questo è lento
+
     controller.clear_bootstrapping_and_rotation_keys(8192);
     controller.load_rotation_keys("rotations-layer3-downsample.bin");
+
     //N.B. questo downsampling usa un chain index in meno - posso accelerare convbn3264sx
     Ctxt fullpackSx = controller.downsample256to64(res1sx[0], res1sx[1]);
     Ctxt fullpackDx = controller.downsample256to64(res1dx[0], res1dx[1]);
     res1sx.clear();
     res1dx.clear();
+
     controller.clear_rotation_keys();
     controller.load_bootstrapping_and_rotation_keys("rotations-layer3.bin", 4096);
+
     controller.num_slots = 4096;
     fullpackSx = controller.bootstrap(fullpackSx, true);
     fullpackSx = controller.relu(fullpackSx, scale, true);
@@ -178,14 +190,20 @@ Ctxt layer2(const Ctxt& in) {
     Ctxt boot_in = controller.bootstrap(in, true);
     vector<Ctxt> res1sx = controller.convbn1632sx(boot_in, 4, 1, scale, true); //Questo è lento
     vector<Ctxt> res1dx = controller.convbn1632dx(boot_in, 4, 1, scale, true); //Questo è lento
+
     controller.clear_bootstrapping_and_rotation_keys(16384);
     controller.load_rotation_keys("rotations-layer2-downsample.bin");
+
     Ctxt fullpackSx = controller.downsample1024to256(res1sx[0], res1sx[1]);
     Ctxt fullpackDx = controller.downsample1024to256(res1dx[0], res1dx[1]);
+
+
     res1sx.clear();
     res1dx.clear();
+
     controller.clear_rotation_keys();
     controller.load_bootstrapping_and_rotation_keys("rotations-layer2.bin", 8192);
+
     controller.num_slots = 8192;
     fullpackSx = controller.bootstrap(fullpackSx, true);
     fullpackSx = controller.relu(fullpackSx, scale, true);
@@ -232,12 +250,46 @@ Ctxt layer1(const Ctxt& in) {
     auto start = start_time();
     Ctxt res1;
     res1 = controller.convbn(in, 1, 1, scale, true);
+
+    //vector<double> v = controller.decrypt(res1)->GetRealPackedValue();
+    //cout << "min: " << *min_element(v.begin(), v.end()) << ", max: " << *max_element(v.begin(), v.end()) << endl;
+    //controller.bootstrap_precision(res1);
+
+    //res1 = controller.encrypt({0.95341, -0.9954812, 0.100000421, 0.29009321, 0.344441412, -0.1, -0.2, -0.3}, controller.circuit_depth - 2);
+    //controller.bootstrap_precision(res1);
+
+    //res1 = controller.encrypt({1, -1}, controller.circuit_depth - 2);
+    //controller.bootstrap_precision(res1);
+    //exit(1);
+
+    /*
+    res1 = controller.encrypt({1, -1, 0.1, 0.2, 0.3, -0.1, -0.2, -0.3}, controller.circuit_depth - 2);
+    vector<double> v = controller.decrypt(res1)->GetRealPackedValue();
+    cout << "min: " << *min_element(v.begin(), v.end()) << ", max: " << *max_element(v.begin(), v.end()) << endl;
+    //controller.print(res1, 10);
+    controller.bootstrap_precision(res1);
+    //Precision: 3.109 con 44, 45
+
+
+    controller.print(res1, 10);
+    res1 = controller.bootstrap(res1,  true);
+    controller.print(res1, 10);
+    exit(1);
+    */
+
+    controller.bootstrap_precision(res1);
     res1 = controller.bootstrap(res1, true);
+    controller.print(res1, 10);
     res1 = controller.relu(res1, scale, true);
+    controller.print(res1, 10);
     res1 = controller.convbn(res1, 1, 2, scale, true);
+    controller.print(res1, 10);
     res1 = controller.add(res1, controller.mult(in, scale));
+    controller.print(res1, 10);
     res1 = controller.bootstrap(res1, true);
+    controller.print(res1, 10);
     res1 = controller.relu(res1, scale, true);
+    controller.print(res1, 10);
     print_duration(start, "Total");
     cout << "---End  : Layer1 - Block 1---" << endl;
 

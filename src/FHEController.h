@@ -28,8 +28,8 @@ class FHEController {
     CryptoContext<DCRTPoly> context;
 
 public:
-    usint circuit_depth;
-    usint num_slots;
+    int circuit_depth;
+    int num_slots;
 
     FHEController() {}
 
@@ -41,25 +41,27 @@ public:
     /*
      * Generating bootstrapping and rotation keys stuff
      */
-    void generate_bootstrapping_keys(usint bootstrap_slots);
+    void generate_bootstrapping_keys(int bootstrap_slots);
     void generate_rotation_keys(vector<int> rotations, bool serialize = false, string filename = "");
     void generate_bootstrapping_and_rotation_keys(vector<int> rotations,
-                                                  usint bootstrap_slots,
+                                                  int bootstrap_slots,
                                                   bool serialize,
                                                   const string& filename);
 
-    void load_bootstrapping_and_rotation_keys(const string& filename, usint bootstrap_slots);
+    void load_bootstrapping_and_rotation_keys(const string& filename, int bootstrap_slots);
     void load_rotation_keys(const string& filename);
-    void clear_bootstrapping_and_rotation_keys(usint bootstrap_num_slots);
+    void clear_bootstrapping_and_rotation_keys(int bootstrap_num_slots);
     void clear_rotation_keys();
 
 
     /*
      * CKKS Encoding/Decoding/Encryption/Decryption
      */
-    Ptxt encode(const vector<double>& vec, usint level, usint plaintext_num_slots);
-    Ptxt encode(double val, usint level, usint plaintext_num_slots);
-    Ctxt encrypt(const vector<double>& vec, usint level = 0, usint plaintext_num_slots = 0);
+    Ptxt encode(const vector<double>& vec, int level, int plaintext_num_slots);
+    Ptxt encode(double val, int level, int plaintext_num_slots);
+    Ctxt encrypt(const vector<double>& vec, int level = 0, int plaintext_num_slots = 0);
+    Ctxt encrypt_ptxt(const Ptxt& p);
+    Ptxt decrypt(const Ctxt& c);
 
 
     /*
@@ -69,15 +71,18 @@ public:
     Ctxt mult(const Ctxt& c, double d);
     Ctxt mult(const Ctxt& c, const Ptxt& p);
     Ctxt bootstrap(const Ctxt& c, bool timing = false);
+    Ctxt bootstrap(const Ctxt& c, int precision, bool timing = false);
     Ctxt relu(const Ctxt& c, double scale, bool timing = false);
-    Ctxt relu_wide(const Ctxt& c, double a, double b, usint degree, double scale, bool timing = false);
+    Ctxt relu_wide(const Ctxt& c, double a, double b, int degree, double scale, bool timing = false);
 
     /*
      * I/O
      */
     Ctxt read_input(const string& filename, double scale = 1);
-    void print(const Ctxt& c, usint slots = 0, string prefix = "");
-    void print_padded(const Ctxt& c, usint slots = 0, usint padding = 1, string prefix = "");
+    void print(const Ctxt& c, int slots = 0, string prefix = "");
+    void print_padded(const Ctxt& c, int slots = 0, int padding = 1, string prefix = "");
+    void print_min_max(const Ctxt& c);
+
     /*
      * Convolutional Neural Network functions
      */
@@ -103,24 +108,25 @@ public:
     Ctxt convbn1632dxV2(const Ctxt &in, int layer, int n, double scale = 0.5, bool timing = false);
 
 
-
     /*
      * Masking things
      */
-    Ptxt gen_mask(int n, usint level);
-    Ptxt mask_first_n(int n, usint level);
-    Ptxt mask_second_n(int n, usint level);
-    Ptxt mask_first_n_mod(int n, int padding, int pos, usint level);
-    Ptxt mask_first_n_mod2(int n, int padding, int pos, usint level);
-    Ptxt mask_channel(int n, usint level);
-    Ptxt mask_channel_2(int n, usint level);
+    Ptxt gen_mask(int n, int level);
+    Ptxt mask_first_n(int n, int level);
+    Ptxt mask_second_n(int n, int level);
+    Ptxt mask_first_n_mod(int n, int padding, int pos, int level);
+    Ptxt mask_first_n_mod2(int n, int padding, int pos, int level);
+    Ptxt mask_channel(int n, int level);
+    Ptxt mask_channel_2(int n, int level);
 
-    Ptxt mask_mod(int n, usint level, double custom_val);
+    Ptxt mask_mod(int n, int level, double custom_val);
+
+    void bootstrap_precision(const Ctxt& c);
 
 
 private:
     KeyPair<DCRTPoly> key_pair;
-    vector<uint32_t> level_budget = {5, 5};
+    vector<uint32_t> level_budget = {4, 4};
 };
 
 
