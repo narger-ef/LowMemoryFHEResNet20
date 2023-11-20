@@ -45,7 +45,8 @@ We can use a set of serialized context and keys with the argument `context` as f
 ./LowMemoryFHEResNet20 context "parameters_first_experiment"
 ```
 This command loads context and keys from the folder `parameters_first_experiment`, located in the root folder of the project.
-Lastly, in order to load a custom image, we use the argument `input` as follows:
+
+Lastly, in order to load a custom image, we use the argument `input`. Notice that the image MUST be a 32x32x3 RGB image in `.jpg` or `.png` format. We use the MIT-licensed [stb](https://github.com/nothings/stb) library in order to read it.
 
 ```
 ./LowMemoryFHEResNet20 context "parameters_first_experiment" input "inputs/louis.jpg"
