@@ -1,8 +1,8 @@
 # Low Memory FHE-based ResNet20
 
----
+<img src="imgs/console.png" alt="Console presentation image" width=85% >
 
-<img src="imgs/console.png" alt="Console presentation image" width=65% align="center">
+---
 
 This repository contains a OpenFHE-based project that implements an encrypted version of the ResNet20 model, used to classify encrypted CIFAR10 images.
 
