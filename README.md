@@ -93,6 +93,16 @@ This is a proof of concept and, even though parameters are created wtih $\lambda
 
 ---
 
+## Authors
+(To be removed before submitting the paper)
+
+- Lorenzo Rovida (`lorenzo.rovida@unimib.it`)
+- Alberto Leporati (`alberto.leporati@unimib.it`)
+
+Made with <3  at [Bicocca Security Lab](https://www.bislab.unimib.it), at University of Milan-Bicocca.
+
+<img src="imgs/lab_logo.png" alt="BisLab logo" width=20%>
+
 ## Bibliography 
 [1] D. Kim and C. Guyot, "Optimized Privacy-Preserving CNN Inference With Fully Homomorphic Encryption," in IEEE Transactions on Information Forensics and Security, vol. 18, pp. 2175-2187, 2023, doi: 10.1109/TIFS.2023.3263631.
 
