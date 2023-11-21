@@ -5,7 +5,7 @@ The key idea behind this work is to propose a solution to run a CNN in relative 
 
 ## Architecture
 
-<img src="img/architecture.png" alt="Architecture description" width=75%>
+<img src="imgs/architecture.png" alt="Architecture description" width=75%>
 
 Bla bla
 
