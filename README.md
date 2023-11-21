@@ -61,16 +61,16 @@ The output of the encrypted model is a vector consisting of 10 elements. In orde
 ```
 In this case, the maximum value is at position 0. Just translate it using the following dictionary (from ResNet20 pretrained on CIFAR-10):
 
-- 0: airplane
-- 1: automobile
-- 2: bird
-- 3: cat
-- 4: deer
-- 5: dog
-- 6: frog
-- 7: horse
-- 8: ship
-- 9: truck
+- 0: Airplane
+- 1: Automobile
+- 2: Bird
+- 3: Cat
+- 4: Deer
+- 5: Dog
+- 6: Frog
+- 7: Horse
+- 8: Ship
+- 9: Truck
 
 In the sample output, the classified image was the following:
 
