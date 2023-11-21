@@ -1,4 +1,4 @@
-# Low Memory FHE-based ResNet20
+ResNet20 based on FHE with Low Memory Overhead
 
 <img src="imgs/console.png" alt="Console presentation image" width=85% >
 
