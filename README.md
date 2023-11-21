@@ -10,9 +10,16 @@ The key idea behind this work is to propose a solution to run a CNN in relative 
 Bla bla
 
 ## How to run
-In order to run the program OpenFHE needs to be installed in the system. Check [how to install OpenFHE](https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/intro/installation/installation.html).
 
-### 1) Build the project
+### 1) Prerequisites
+
+In order to run the program we need a few things installed on our system:
+
+- g++
+- cmake
+- OpenFHE ([how to install OpenFHE](https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/intro/installation/installation.html))
+
+### 2) Build the project
 
 Build the project using this command:
 ```
@@ -24,7 +31,7 @@ You can also use the `-j` flag in order to speed up the compilation, just put th
 cmake --build "build" --target LowMemoryFHEResNet20 -j 8
 ```
 
-### 2) Creating the context
+### 3) Creating the context
 
 After building, go to the created `build` folder:
 ```
@@ -42,7 +49,7 @@ The first execution should be launched with the `generate_keys` argument, using 
 ```
 This command create the required keys and stores them in a new folder called `params_exp1`, in the root folder of the project.
 
-### 3) Running the inference
+### 4) Running the inference
 
 Now we are able to launch an inference process using the just created set of keys and parameters. Simply use
 ```
