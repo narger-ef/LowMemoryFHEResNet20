@@ -80,8 +80,6 @@ Lastly, in order to load a custom image, we use the argument `input` as follows:
 ```
 Even for this argument, the starting position will be the root of the project.
 
-### Bibliography 
-=======
 ## Interpreting the output
 The output of the encrypted model is a vector consisting of 10 elements. In order to interpret it, it is enough to find the index of the maximum element. A sample output could be:
 
