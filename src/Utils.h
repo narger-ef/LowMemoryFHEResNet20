@@ -8,6 +8,8 @@
 #include <iostream>
 #include <openfhe.h>
 
+#define YELLOW_TEXT "\033[1;33m"
+#define RESET_COLOR "\033[0m"
 
 
 using namespace std;
@@ -21,6 +23,34 @@ namespace utils {
     }
 
     static duration<long long, ratio<1, 1000>> total_time;
+
+    static inline string get_class(int max_index) {
+        switch (max_index) {
+            //I know, I should use a dict
+            case 0:
+                return "Airplane";
+            case 1:
+                return "Automobile";
+            case 2:
+                return "Bird";
+            case 3:
+                return "Cat";
+            case 4:
+                return "Deer";
+            case 5:
+                return "Dog";
+            case 6:
+                return "Frog";
+            case 7:
+                return "Horse";
+            case 8:
+                return "Ship";
+            case 9:
+                return "Truck";
+        }
+
+        return "?";
+    }
 
     static inline void print_duration(chrono::time_point<steady_clock, nanoseconds> start, const string &title) {
         auto ms = duration_cast<milliseconds>(steady_clock::now() - start);
@@ -36,6 +66,23 @@ namespace utils {
             cout << "⌛(" << title << "): " << secs.count() << ":" << ms.count() << "s" << " (Total: " << duration_cast<seconds>(total_time).count() << "s)" << endl;
         } else {
             cout << "⌛(" << title << "): " << mins.count() << "." << secs.count() << ":" << ms.count() << endl;
+        }
+    }
+
+    static inline void print_duration_yellow(chrono::time_point<steady_clock, nanoseconds> start, const string &title) {
+        auto ms = duration_cast<milliseconds>(steady_clock::now() - start);
+
+        total_time += ms;
+
+        auto secs = duration_cast<seconds>(ms);
+        ms -= duration_cast<milliseconds>(secs);
+        auto mins = duration_cast<minutes>(secs);
+        secs -= duration_cast<seconds>(mins);
+
+        if (mins.count() < 1) {
+            cout << "⌛(" << title << "): " << secs.count() << ":" << ms.count() << "s" << " (Total: " << duration_cast<seconds>(total_time).count() << "s)" << endl;
+        } else {
+            cout << "⌛(" << title << "): " << YELLOW_TEXT << mins.count() << "." << secs.count() << ":" << ms.count() << RESET_COLOR << endl;
         }
     }
 

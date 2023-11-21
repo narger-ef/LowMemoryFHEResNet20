@@ -233,7 +233,7 @@ void FHEController::load_context(bool verbose) {
     level_budget[0] = read_from_file("../" + parameters_folder + "/level_budget.txt").at(0) - '0';
     level_budget[1] = read_from_file("../" + parameters_folder + "/level_budget.txt").at(2) - '0';
 
-    cout << "CtoS: " << level_budget[0] << ", StoC: " << level_budget[1] << endl;
+    if (verbose) cout << "CtoS: " << level_budget[0] << ", StoC: " << level_budget[1] << endl;
 
     uint32_t approxBootstrapDepth = 8;
 
@@ -284,14 +284,14 @@ void FHEController::generate_bootstrapping_and_rotation_keys(vector<int> rotatio
     generate_rotation_keys(rotations, serialize, filename);
 }
 
-void FHEController::load_bootstrapping_and_rotation_keys(const string& filename, int bootstrap_slots) {
-    cout << endl << "Loading bootstrapping and rotations keys from " << filename << "..." << endl;
+void FHEController::load_bootstrapping_and_rotation_keys(const string& filename, int bootstrap_slots, bool verbose) {
+    if (verbose) cout << endl << "Loading bootstrapping and rotations keys from " << filename << "..." << endl;
 
     auto start = start_time();
 
     context->EvalBootstrapSetup(level_budget, {0, 0}, bootstrap_slots);
 
-    cout << "(1/2) Bootstrapping precomputations completed!" << endl;
+    if (verbose)  cout << "(1/2) Bootstrapping precomputations completed!" << endl;
 
 
     ifstream rotKeyIStream("../" + parameters_folder + "/rot_" + filename, ios::in | ios::binary);
@@ -305,15 +305,15 @@ void FHEController::load_bootstrapping_and_rotation_keys(const string& filename,
         exit(1);
     }
 
-    cout << "(2/2) Rotation keys read!" << endl;
+    if (verbose) cout << "(2/2) Rotation keys read!" << endl;
 
-    print_duration(start, "Loading bootstrapping pre-computations + rotations");
+    if (verbose) print_duration(start, "Loading bootstrapping pre-computations + rotations");
 
     cout << endl;
 }
 
-void FHEController::load_rotation_keys(const string& filename) {
-    cout << endl << "Loading rotations keys from " << filename << "..." << endl;
+void FHEController::load_rotation_keys(const string& filename, bool verbose) {
+    if (verbose) cout << endl << "Loading rotations keys from " << filename << "..." << endl;
 
     auto start = start_time();
 
@@ -328,11 +328,11 @@ void FHEController::load_rotation_keys(const string& filename) {
         exit(1);
     }
 
-    cout << "(1/1) Rotation keys read!" << endl;
-
-    print_duration(start, "Loading rotation keys");
-
-    cout << endl;
+    if (verbose) {
+        cout << "(1/1) Rotation keys read!" << endl;
+        print_duration(start, "Loading rotation keys");
+        cout << endl;
+    }
 }
 
 void FHEController::clear_bootstrapping_and_rotation_keys(int bootstrap_num_slots) {
@@ -402,6 +402,19 @@ Ptxt FHEController::decrypt(const Ctxt &c) {
     return p;
 }
 
+vector<double> FHEController::decrypt_tovector(const Ctxt &c, int slots) {
+    if (slots == 0) {
+        slots = num_slots;
+    }
+
+    Ptxt p;
+    context->Decrypt(key_pair.secretKey, c, &p);
+    p->SetSlots(slots);
+    p->SetLength(slots);
+    vector<double> vec = p->GetRealPackedValue();
+    return vec;
+}
+
 /*
  * Homomorphic operations
  */
@@ -419,7 +432,7 @@ Ctxt FHEController::mult(const Ctxt &c, const Ptxt& p) {
 }
 
 Ctxt FHEController::bootstrap(const Ctxt &c, bool timing) {
-    if (c->GetLevel() + 2 < circuit_depth) {
+    if (c->GetLevel() + 2 < circuit_depth && timing) {
         cout << "You are bootstrapping with remaining levels! You are at " << to_string(c->GetLevel()) << "/" << circuit_depth - 2 << endl;
     }
 
@@ -460,7 +473,7 @@ Ctxt FHEController::relu(const Ctxt &c, double scale, bool timing) {
     context->Decrypt(key_pair.secretKey, c, &result);
     vector<double> v = result->GetRealPackedValue();
 
-    cout << "min: " << *min_element(v.begin(), v.end()) << ", max: " << *max_element(v.begin(), v.end()) << endl;
+    //cout << "min: " << *min_element(v.begin(), v.end()) << ", max: " << *max_element(v.begin(), v.end()) << endl;
     /*
      * Max min
      */
@@ -529,7 +542,7 @@ void FHEController::print(const Ctxt &c, int slots, string prefix) {
     result->SetSlots(num_slots);
     vector<double> v = result->GetRealPackedValue();
 
-    cout << setprecision(5) << fixed;
+    cout << setprecision(3) << fixed;
     cout << "[ ";
 
     for (int i = 0; i < slots; i += 1) {

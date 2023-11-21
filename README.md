@@ -1,5 +1,6 @@
 # Low Memory FHE-based ResNet20
 
+<<<<<<< Updated upstream
 <img src="imgs/console.png" alt="Console presentation image" width=65% align="center">
 
 This repository contains a OpenFHE-based project that implements an encrypted version of the ResNet20 model, used to classify encrypted CIFAR10 images.
@@ -7,6 +8,15 @@ This repository contains a OpenFHE-based project that implements an encrypted ve
 The reference paper for this work is [Low memory overhead secure ResNet inference based on Fully Homomorphic Encryption](google.it), (2023, Lorenzo Rovida and Alberto Leporati).
 
 The key idea behind this work is to propose a solution to run a CNN in relative small time ($<5$ minutes on my MacBook M1 Pro with 16GB RAM) and, moreover, to use a small amount of memory.
+=======
+<img src="imgs/console.png" alt="Architecture description" width=75% align="center">
+
+This repository contains a OpenFHE-based project that implements an encrypted version of the ResNet20 model, used to classify encrypted CIFAR10 images. 
+
+The reference paper for this work is [Low memory overhead secure ResNet inference based on Fully Homomorphic Encryption](google.it), (2023, Lorenzo Rovida and Alberto Leporati).
+
+The key idea behind this work is to propose a solution to run a CNN in relative small time ($<5$ minutes on my MacBook M1 Pro with 16GB RAM) and, moreover, to use a small amount of memory. 
+>>>>>>> Stashed changes
 
 Existing works use a lot of memory ([]: $\approx$ 100GB, []: $\approx$ 500GB), while this implementation uses at most 16GB, making it usable by normal users.
 
@@ -21,9 +31,13 @@ Experiments show that it is possible to evaluate the circuit in less than 5 minu
 
 ## Architecture
 
-<img src="img/architecture.png" alt="Architecture description" width=75%>
+<img src="imgs/architecture.png" alt="Architecture description" width=75%>
 
 
+<<<<<<< Updated upstream
+
+=======
+>>>>>>> Stashed changes
 
 ## How to run
 In order to run the program OpenFHE needs to be installed in the system. Check [how to install OpenFHE](https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/intro/installation/installation.html).
@@ -59,7 +73,11 @@ and run it with the following command:
 - `load_keys`, type: `string`
 - `input`, type: `string`
 - `verbose` a value in `[-1, 0, 1, 2]`
+<<<<<<< Updated upstream
 
+=======
+  
+>>>>>>> Stashed changes
 The first execution should be launched with the `generate_keys` argument, using the preferred set of parameters. Check the paper to see the differences between them. For instance, we choose the set of parameters defined in the first experiment:
 ```
 ./LowMemoryFHEResNet20 generate_keys "params_exp1"
@@ -125,6 +143,7 @@ Made with <3  at [Bicocca Security Lab](https://www.bislab.unimib.it), at Univer
 
 ---
 
+<<<<<<< Updated upstream
 ## Bibliography
 
 [1] Kim, A., Papadimitriou, A., Polyakov, Y. (2022). Approximate Homomorphic Encryption with Reduced Approximation Error. In: Galbraith, S.D. (eds) Topics in Cryptology – CT-RSA 2022. CT-RSA 2022. Lecture Notes in Computer Science(), vol 13161. Springer, Cham. https://doi.org/10.1007/978-3-030-95312-6_6
@@ -133,5 +152,16 @@ Made with <3  at [Bicocca Security Lab](https://www.bislab.unimib.it), at Univer
 [1] D. Kim and C. Guyot, "Optimized Privacy-Preserving CNN Inference With Fully Homomorphic Encryption," in IEEE Transactions on Information Forensics and Security, vol. 18, pp. 2175-2187, 2023, doi: 10.1109/TIFS.2023.3263631.
 
 [2] Al Badawi, A., Bates, J., Bergamaschi, F., Cousins, D. B., Erabelli, S., Genise, N., Halevi, S., Hunt, H., Kim, A., Lee, Y., Liu, Z., Micciancio, D., Quah, I., Polyakov, Y., R.V., S., Rohloff, K., Saylor, J., Suponitsky, D., Triplett, M., … Zucca, V. (2022). OpenFHE: Open-Source Fully Homomorphic Encryption Library. Proceedings of the 10th Workshop on Encrypted Computing & Applied Homomorphic Cryptography, 53–63. https://doi.org/10.1145/3560827.3563379
+=======
+## Bibliography 
+
+[1] Kim, A., Papadimitriou, A., Polyakov, Y. (2022). Approximate Homomorphic Encryption with Reduced Approximation Error. In: Galbraith, S.D. (eds) Topics in Cryptology – CT-RSA 2022. CT-RSA 2022. Lecture Notes in Computer Science(), vol 13161. Springer, Cham. https://doi.org/10.1007/978-3-030-95312-6_6
+
+[1] D. Kim and C. Guyot, "Optimized Privacy-Preserving CNN Inference With Fully Homomorphic Encryption," in IEEE Transactions on Information Forensics and Security, vol. 18, pp. 2175-2187, 2023, doi: 10.1109/TIFS.2023.3263631.
+
+[2] Al Badawi, A., Bates, J., Bergamaschi, F., Cousins, D. B., Erabelli, S., Genise, N., Halevi, S., Hunt, H., Kim, A., Lee, Y., Liu, Z., Micciancio, D., Quah, I., Polyakov, Y., R.V., S., Rohloff, K., Saylor, J., Suponitsky, D., Triplett, M., … Zucca, V. (2022). OpenFHE: Open-Source Fully Homomorphic Encryption Library. Proceedings of the 10th Workshop on Encrypted Computing & Applied Homomorphic Cryptography, 53–63. https://doi.org/10.1145/3560827.3563379
+
+[2] Lee, E., Lee, J. W., Lee, J., Kim, Y. S., Kim, Y., No, J. S., & Choi, W. (2022, June). Low-complexity deep convolutional neural networks on fully homomorphic encryption using multiplexed parallel convolutions. In International Conference on Machine Learning (pp. 12403-12422). PMLR.
+>>>>>>> Stashed changes
 
 [2] Lee, E., Lee, J. W., Lee, J., Kim, Y. S., Kim, Y., No, J. S., & Choi, W. (2022, June). Low-complexity deep convolutional neural networks on fully homomorphic encryption using multiplexed parallel convolutions. In International Conference on Machine Learning (pp. 12403-12422). PMLR.
