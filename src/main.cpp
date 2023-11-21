@@ -10,8 +10,7 @@
 void check_arguments(int argc, char *argv[]);
 vector<double> read_image(const char *filename);
 
-void executeResNet20(const string& filename);
-
+void executeResNet20();
 
 Ctxt initial_layer(const Ctxt& in);
 Ctxt layer1(const Ctxt& in);
@@ -37,7 +36,7 @@ int main(int argc, char *argv[]) {
     /*
      * LINES ADDED FOR DEBUG
      *******************************
-     */
+     *
 
     generate_context = 1;
     string folder = "keys_exp1";
@@ -50,14 +49,14 @@ int main(int argc, char *argv[]) {
     else {
         filesystem::create_directory("../" + folder);
     }
-     /*
+     *
      * *****************************
      *
      * REMOVE THESE LINES IN RELEASE
      */
 
-    //generate_context = 0;
-    //controller.parameters_folder = "keys_exp1";
+    generate_context = 0;
+    controller.parameters_folder = "keys_exp1";
 
     if (generate_context == -1) {
         cerr << "You either have to use the argument \"generate_keys\" or \"load_keys\"!\nIf it is your first time, you could try"
@@ -68,8 +67,8 @@ int main(int argc, char *argv[]) {
     if (generate_context > 0) {
         switch (generate_context) {
             case 1:
-                //Parameters for experiment 1
-                controller.generate_context(16, 51, 44, 2, 4,4, 59, true);
+                //Parameters for experiment 1 \approx 13.2GB As it is, precision boot 9.6.
+                controller.generate_context(16, 52, 48, 2, 3,3, 59, true);
                 break;
             case 3:
                 //Parameters for experiment 3
@@ -130,16 +129,16 @@ int main(int argc, char *argv[]) {
         controller.load_context();
     }
 
-    executeResNet20("../test_images/input_louis.bin");
+    executeResNet20();
 }
 
-void executeResNet20(const string& filename) {
+void executeResNet20() {
     cout << "Starting ResNet20 classification." << endl;
 
     Ctxt firstLayer, resLayer1, resLayer2, resLayer3, finalRes;
 
     bool print_intermediate_values = true;
-    bool print_bootstrap_precision = true;
+    bool print_bootstrap_precision = false;
 
     if (input_filename.empty()) {
         input_filename = "../inputs/louis.jpg";
@@ -159,6 +158,7 @@ void executeResNet20(const string& filename) {
     auto start = start_time();
 
     firstLayer = initial_layer(in);
+    if (print_intermediate_values) controller.print(firstLayer, 16384, "Initial layer: ");
 
     resLayer1 = layer1(firstLayer);
     Serial::SerializeToFile("../checkpoints/layer1.bin", resLayer1, SerType::BINARY);
@@ -186,6 +186,7 @@ Ctxt initial_layer(const Ctxt& in) {
 
     Ctxt res = controller.convbn_initial(in, scale, true);
     res = controller.relu(res, scale, true);
+    controller.print(res, 16384, "Initial layer: ");
 
     return res;
 }

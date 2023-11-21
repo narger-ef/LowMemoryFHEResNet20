@@ -111,7 +111,7 @@ void FHEController::generate_context(int log_ring, int log_scale, int log_primes
     level_budget.push_back(stc_levels);
 
     int dcrtBits = log_primes;
-    int firstMod = log_scale; //45: 4.XX - 48: 7.84 - 51: 8.07:
+    int firstMod = log_scale;
 
     parameters.SetScalingModSize(dcrtBits);
     parameters.SetScalingTechnique(FLEXIBLEAUTO);
@@ -125,6 +125,7 @@ void FHEController::generate_context(int log_ring, int log_scale, int log_primes
     relu_degree = relu_deg;
 
     write_to_file("../" + parameters_folder + "/relu_degree.txt", to_string(relu_deg));
+    write_to_file("../" + parameters_folder + "/level_budget.txt", to_string(level_budget[0]) + "," + to_string(level_budget[1]));
 
     circuit_depth = levelsUsedBeforeBootstrap +
                     FHECKKSRNS::GetBootstrapDepth(approxBootstrapDepth, level_budget, SPARSE_TERNARY);
@@ -227,6 +228,12 @@ void FHEController::load_context(bool verbose) {
     }
 
     relu_degree = stoi(read_from_file("../" + parameters_folder + "/relu_degree.txt"));
+
+    //level_budget.txt contains "X, Y", X is at(0), Y is at(2)
+    level_budget[0] = read_from_file("../" + parameters_folder + "/level_budget.txt").at(0) - '0';
+    level_budget[1] = read_from_file("../" + parameters_folder + "/level_budget.txt").at(2) - '0';
+
+    cout << "CtoS: " << level_budget[0] << ", StoC: " << level_budget[1] << endl;
 
     uint32_t approxBootstrapDepth = 8;
 
@@ -522,7 +529,7 @@ void FHEController::print(const Ctxt &c, int slots, string prefix) {
     result->SetSlots(num_slots);
     vector<double> v = result->GetRealPackedValue();
 
-    cout << setprecision(10) << fixed;
+    cout << setprecision(5) << fixed;
     cout << "[ ";
 
     for (int i = 0; i < slots; i += 1) {
@@ -641,17 +648,17 @@ Ctxt FHEController::convbn_initial(const Ctxt &in, double scale, bool timing) {
 
         Ctxt res = sum->Clone();
 
-        res = add(res, context->EvalRotate(sum, -1024));
-        res = add(res, context->EvalRotate(context->EvalRotate(sum, -1024), -1024));
+        res = add(res, context->EvalRotate(sum, 1024));
+        res = add(res, context->EvalRotate(context->EvalRotate(sum, 1024), 1024));
         res = mult(res, mask_from_to(0, 1024, res->GetLevel()));
 
 
         if (j == 0) {
             finalsum = res->Clone();
-            finalsum = context->EvalRotate(finalsum, -1024);
+            finalsum = context->EvalRotate(finalsum, 1024);
         } else {
             finalsum = context->EvalAdd(finalsum, res);
-            finalsum = context->EvalRotate(finalsum, -1024);
+            finalsum = context->EvalRotate(finalsum, 1024);
         }
 
     }
