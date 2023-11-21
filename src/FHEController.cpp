@@ -16,6 +16,7 @@ void FHEController::generate_context(bool serialize) {
     parameters.SetRingDim(1 << 16);
     parameters.SetBatchSize(num_slots);
 
+    level_budget = {4, 4};
 
     ScalingTechnique rescaleTech = FLEXIBLEAUTO;
 
@@ -69,7 +70,7 @@ void FHEController::generate_context(bool serialize) {
         multKeyFile.close();
     }
     else {
-        cerr << "Error serializing EvalMult keys" << std::endl;
+        cerr << "Error serializing EvalMult keys in \"" << "../" + parameters_folder + "/mult-keys.txt" << "\"" << endl;
         exit(1);
     }
 
@@ -92,13 +93,108 @@ void FHEController::generate_context(bool serialize) {
     }
 }
 
-void FHEController::load_context() {
+void FHEController::generate_context(int log_ring, int log_scale, int log_primes, int digits_hks, int cts_levels,
+                                     int stc_levels, int relu_deg, bool serialize) {
+
+    CCParams<CryptoContextCKKSRNS> parameters;
+
+    num_slots = 1 << 14;
+
+    parameters.SetSecretKeyDist(SPARSE_TERNARY);
+    parameters.SetSecurityLevel(lbcrypto::HEStd_128_classic);
+    parameters.SetNumLargeDigits(digits_hks);
+    parameters.SetRingDim(1 << log_ring);
+    parameters.SetBatchSize(num_slots);
+
+    level_budget = vector<uint32_t>();
+    level_budget.push_back(cts_levels);
+    level_budget.push_back(stc_levels);
+
+    int dcrtBits = log_primes;
+    int firstMod = log_scale; //45: 4.XX - 48: 7.84 - 51: 8.07:
+
+    parameters.SetScalingModSize(dcrtBits);
+    parameters.SetScalingTechnique(FLEXIBLEAUTO);
+    parameters.SetFirstModSize(firstMod);
+
+    uint32_t approxBootstrapDepth = 8;
+
+    uint32_t levelsUsedBeforeBootstrap = get_relu_depth(relu_deg) + 3;
+
+    //<relu_degree> is at class-level, <relu_deg> is the input of the function
+    relu_degree = relu_deg;
+
+    write_to_file("../" + parameters_folder + "/relu_degree.txt", to_string(relu_deg));
+
+    circuit_depth = levelsUsedBeforeBootstrap +
+                    FHECKKSRNS::GetBootstrapDepth(approxBootstrapDepth, level_budget, SPARSE_TERNARY);
+
+    cout << endl << "Ciphertexts depth: " << circuit_depth << ", available multiplications: "
+         << levelsUsedBeforeBootstrap - 2 << endl;
+
+    parameters.SetMultiplicativeDepth(circuit_depth);
+
+    context = GenCryptoContext(parameters);
+
+    cout << "Context built, generating keys..." << endl;
+
+    context->Enable(PKE);
+    context->Enable(KEYSWITCH);
+    context->Enable(LEVELEDSHE);
+    context->Enable(ADVANCEDSHE);
+    context->Enable(FHE);
+
+    key_pair = context->KeyGen();
+
+    context->EvalMultKeyGen(key_pair.secretKey);
+
+    cout << "Generated." << endl;
+
+    if (!serialize) {
+        return;
+    }
+
+    cout << "Now serializing keys ..." << endl;
+
+    ofstream multKeyFile("../" + parameters_folder + "/mult-keys.txt", ios::out | ios::binary);
+    if (multKeyFile.is_open()) {
+        if (!context->SerializeEvalMultKey(multKeyFile, SerType::BINARY)) {
+            cerr << "Error writing EvalMult keys" << std::endl;
+            exit(1);
+        }
+        cout << "EvalMult keys have been serialized" << std::endl;
+        multKeyFile.close();
+    } else {
+        cerr << "Error serializing EvalMult keys in \"" << "../" + parameters_folder + "/mult-keys.txt" << "\"" << endl;
+        exit(1);
+    }
+
+    if (!Serial::SerializeToFile("../" + parameters_folder + "/crypto-context.txt", context, SerType::BINARY)) {
+        cerr << "Error writing serialization of the crypto context to crypto-context.txt" << endl;
+    } else {
+        cout << "Crypto Context have been serialized" << std::endl;
+    }
+
+    if (!Serial::SerializeToFile("../" + parameters_folder + "/public-key.txt", key_pair.publicKey, SerType::BINARY)) {
+        cerr << "Error writing serialization of public key to public-key.txt" << endl;
+    } else {
+        cout << "Public Key has been serialized" << std::endl;
+    }
+
+    if (!Serial::SerializeToFile("../" + parameters_folder + "/secret-key.txt", key_pair.secretKey, SerType::BINARY)) {
+        cerr << "Error writing serialization of public key to secret-key.txt" << endl;
+    } else {
+        cout << "Secret Key has been serialized" << std::endl;
+    }
+}
+
+void FHEController::load_context(bool verbose) {
     context->ClearEvalMultKeys();
     context->ClearEvalAutomorphismKeys();
 
     CryptoContextFactory<lbcrypto::DCRTPoly>::ReleaseAllContexts();
 
-    cout << "Reading serialized context..." << endl;
+    if (verbose) cout << "Reading serialized context..." << endl;
 
     if (!Serial::DeserializeFromFile("../" + parameters_folder + "/crypto-context.txt", context, SerType::BINARY)) {
         cerr << "I cannot read serialized data from: " << "../" + parameters_folder + "/crypto-context.txt" << endl;
@@ -130,13 +226,15 @@ void FHEController::load_context() {
         exit(1);
     }
 
+    relu_degree = stoi(read_from_file("../" + parameters_folder + "/relu_degree.txt"));
+
     uint32_t approxBootstrapDepth = 8;
 
-    uint32_t levelsUsedBeforeBootstrap = 10;
+    uint32_t levelsUsedBeforeBootstrap = get_relu_depth(relu_degree) + 3;
 
     circuit_depth = levelsUsedBeforeBootstrap + FHECKKSRNS::GetBootstrapDepth(approxBootstrapDepth, level_budget, SPARSE_TERNARY);
 
-    cout << "Circuit depth: " << circuit_depth << ", available multiplications: " << levelsUsedBeforeBootstrap - 2 << endl;
+    if (verbose) cout << "Circuit depth: " << circuit_depth << ", available multiplications: " << levelsUsedBeforeBootstrap - 2 << endl;
 
     num_slots = 1 << 14;
 }
@@ -161,7 +259,7 @@ void FHEController::generate_rotation_keys(vector<int> rotations, bool serialize
                 cerr << "Error writing rotation keys" << std::endl;
                 exit(1);
             }
-            cout << "Rotation keys have been serialized" << std::endl;
+            cout << "Rotation keys \"" << filename << "\" have been serialized" << std::endl;
         } else {
             cerr << "Error serializing Rotation keys" << "../" + parameters_folder + "/rot_" + filename << std::endl;
             exit(1);
@@ -231,13 +329,22 @@ void FHEController::load_rotation_keys(const string& filename) {
 }
 
 void FHEController::clear_bootstrapping_and_rotation_keys(int bootstrap_num_slots) {
-    //FHECKKSRNS* derivedPtr = dynamic_cast<FHECKKSRNS*>(context->GetScheme()->GetFHE().get());
-    //derivedPtr->m_bootPrecomMap.erase(bootstrap_num_slots);
-    context->ClearEvalAutomorphismKeys();
+    FHECKKSRNS* derivedPtr = dynamic_cast<FHECKKSRNS*>(context->GetScheme()->GetFHE().get());
+    derivedPtr->m_bootPrecomMap.erase(bootstrap_num_slots);
+    clear_rotation_keys();
 }
 
 void FHEController::clear_rotation_keys() {
     context->ClearEvalAutomorphismKeys();
+}
+
+void FHEController::clear_context(int bootstrapping_key_slots) {
+    if (bootstrapping_key_slots != 0)
+        clear_bootstrapping_and_rotation_keys(bootstrapping_key_slots);
+    else
+        clear_rotation_keys();
+
+    context->ClearEvalMultKeys();
 }
 
 /*
@@ -518,6 +625,8 @@ Ctxt FHEController::convbn_initial(const Ctxt &in, double scale, bool timing) {
 
     Ctxt finalsum;
 
+    generate_rotation_keys({1024});
+
     for (int j = 0; j < 16; j++) {
         vector<Ctxt> k_rows;
 
@@ -532,17 +641,17 @@ Ctxt FHEController::convbn_initial(const Ctxt &in, double scale, bool timing) {
 
         Ctxt res = sum->Clone();
 
-        res = add(res, context->EvalRotate(sum, 1024));
-        res = add(res, context->EvalRotate(context->EvalRotate(sum, 1024), 1024));
+        res = add(res, context->EvalRotate(sum, -1024));
+        res = add(res, context->EvalRotate(context->EvalRotate(sum, -1024), -1024));
         res = mult(res, mask_from_to(0, 1024, res->GetLevel()));
 
 
         if (j == 0) {
             finalsum = res->Clone();
-            finalsum = context->EvalRotate(finalsum, 1024);
+            finalsum = context->EvalRotate(finalsum, -1024);
         } else {
             finalsum = context->EvalAdd(finalsum, res);
-            finalsum = context->EvalRotate(finalsum, 1024);
+            finalsum = context->EvalRotate(finalsum, -1024);
         }
 
     }

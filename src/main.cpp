@@ -1,10 +1,13 @@
 #include <iostream>
+#include <sys/stat.h>
+
 #include "FHEController.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-void check_arguments(int argc, char *argv[], bool default_generate);
+
+void check_arguments(int argc, char *argv[]);
 vector<double> read_image(const char *filename);
 
 void executeResNet20(const string& filename);
@@ -18,7 +21,7 @@ Ctxt final_layer(const Ctxt& in);
 
 FHEController controller;
 
-bool generate_context;
+int generate_context;
 string input_filename;
 
 /*
@@ -29,39 +32,99 @@ string input_filename;
 int main(int argc, char *argv[]) {
     //TODO: possibile che il bootstrap a 8192 ci metta lo stesso tempo? indaga
 
-    check_arguments(argc, argv, false);
+    check_arguments(argc, argv);
 
-    if (generate_context) {
-        controller.generate_context(true);
+    /*
+     * LINES ADDED FOR DEBUG
+     *******************************
+     */
 
-        cout << "Context built." << endl;
+    generate_context = 1;
+    string folder = "keys_exp1";
+    controller.parameters_folder = folder;
+    struct stat sb;
+    if (stat(("../" + folder).c_str(), &sb) == 0) {
+        cerr << "The keys folder \"" << folder << "\" already exists, I will abort.";
+        exit(1);
+    }
+    else {
+        filesystem::create_directory("../" + folder);
+    }
+     /*
+     * *****************************
+     *
+     * REMOVE THESE LINES IN RELEASE
+     */
 
-        controller.generate_bootstrapping_and_rotation_keys({1, -1, 32, -32, -1024},
-                                                            16384,
-                                                            true, "rotations-layer1.bin");
-        /*
+    //generate_context = 0;
+    //controller.parameters_folder = "keys_exp1";
+
+    if (generate_context == -1) {
+        cerr << "You either have to use the argument \"generate_keys\" or \"load_keys\"!\nIf it is your first time, you could try"
+                "with \"./LowMemoryFHEResNet20 generate_keys \"keys_exp1\"\nCheck the README.md.\nAborting. :-(" << endl;
+        exit(1);
+    }
+
+    if (generate_context > 0) {
+        switch (generate_context) {
+            case 1:
+                //Parameters for experiment 1
+                controller.generate_context(16, 51, 44, 2, 4,4, 59, true);
+                break;
+            case 3:
+                //Parameters for experiment 3
+                controller.generate_context(16, 52, 47, 3, 4, 4, 119, true);
+                break;
+            default:
+                controller.generate_context(true);
+                break;
+        }
+
+        cout << "Basic context built. Now generating bootstrapping and rotations keys..." << endl;
+
+        cout << "(It may take a while, depending on the machine)" << endl;
+
+
         controller.generate_bootstrapping_and_rotation_keys({1, -1, 32, -32, -1024},
                                                             16384,
                                                             true,
                                                             "rotations-layer1.bin");
+        //After each serialization I release and re-load the context, otherwise OpenFHE gives a weird error (something
+        //like "4kb missing"), but I have no time to investigate :D
+        cout << "1/6 done." << endl;
+        controller.clear_context(16384);
+        controller.load_context(false);
         controller.generate_rotation_keys({1, 2, 4, 8, 64-16, -(1024 - 256), (1024 - 256) * 32, -8192},
                                           true,
                                           "rotations-layer2-downsample.bin");
+        cout << "2/6 done." << endl;
+        controller.clear_context(0);
+        controller.load_context(false);
         controller.generate_bootstrapping_and_rotation_keys({1, -1, 16, -16, -256},
                                           8192,
                                           true,
                                           "rotations-layer2.bin");
+        cout << "3/6 done." << endl;
+        controller.clear_context(8192);
+        controller.load_context(false);
         controller.generate_rotation_keys({1, 2, 4, 32 - 8, -(256 - 64), (256 - 64) * 64, -4096},
                                           true,
                                           "rotations-layer3-downsample.bin");
+        cout << "4/6 done." << endl;
+        controller.clear_context(0);
+        controller.load_context(false);
         controller.generate_bootstrapping_and_rotation_keys({1, -1, 8, -8, -64},
                                           4096,
                                           true,
                                           "rotations-layer3.bin");
-
+        cout << "5/6 done." << endl;
+        controller.clear_context(4096);
+        controller.load_context(false);
         controller.generate_rotation_keys({1, 2, 4, 8, 16, 32, -15, 64, 128, 256, 512, 1024, 2048}, true, "rotations-finallayer.bin");
+        cout << "6/6 done!" << endl;
 
-        */
+        controller.clear_context(0);
+        controller.load_context(false);
 
     } else {
         controller.load_context();
@@ -75,10 +138,8 @@ void executeResNet20(const string& filename) {
 
     Ctxt firstLayer, resLayer1, resLayer2, resLayer3, finalRes;
 
-    auto start = start_time();
-
     bool print_intermediate_values = true;
-    bool print_bootstrap_precision = false;
+    bool print_bootstrap_precision = true;
 
     if (input_filename.empty()) {
         input_filename = "../inputs/louis.jpg";
@@ -92,8 +153,10 @@ void executeResNet20(const string& filename) {
     controller.load_bootstrapping_and_rotation_keys("rotations-layer1.bin", 16384);
 
     if (print_bootstrap_precision){
-        controller.bootstrap_precision(in);
+        controller.bootstrap_precision(controller.encrypt(input_image, controller.circuit_depth - 2));
     }
+
+    auto start = start_time();
 
     firstLayer = initial_layer(in);
 
@@ -214,7 +277,7 @@ Ctxt layer3(const Ctxt& in) {
 }
 
 Ctxt layer2(const Ctxt& in) {
-    double scale = 0.4;
+    double scale = 0.5;
 
     cout << "---Start: Layer2 - Block 1---" << endl;
     auto start = start_time();
@@ -275,7 +338,7 @@ Ctxt layer2(const Ctxt& in) {
 }
 
 Ctxt layer1(const Ctxt& in) {
-    double scale = 0.4;
+    double scale = 0.5;
 
     cout << "---Start: Layer1 - Block 1---" << endl;
     auto start = start_time();
@@ -320,13 +383,50 @@ Ctxt layer1(const Ctxt& in) {
     return res3;
 }
 
-void check_arguments(int argc, char *argv[], bool default_generate) {
+void check_arguments(int argc, char *argv[]) {
+    generate_context = -1;
+
     for (int i = 1; i < argc; ++i) {
-        if (string(argv[i]) == "context") {
+        if (string(argv[i]) == "load_keys") {
             if (i + 1 < argc) { // Verifica se c'è un argomento successivo a "context"
                 controller.parameters_folder = string(argv[i + 1]);
                 cout << "Context folder set to: \"" << controller.parameters_folder << "\"." << endl;
-                generate_context = false;
+                generate_context = 0;
+            }
+        }
+
+        if (string(argv[i]) == "generate_keys") {
+            if (i + 1 < argc) { // Verifica se c'è un argomento successivo a "context"
+                string folder = "";
+                if (string(argv[i+1]) == "keys_exp1") {
+                    folder = "../keys_exp1";
+                    generate_context = 1;
+                } else if (string(argv[i+1]) == "keys_exp2") {
+                    folder = "../keys_exp2";
+                    generate_context = 2;
+                } else if (string(argv[i+1]) == "keys_exp3") {
+                    folder = "../keys_exp3";
+                    generate_context = 3;
+                } else if (string(argv[i+1]) == "keys_exp4") {
+                    folder = "../keys_exp4";
+                    generate_context = 4;
+                } else {
+                    cerr << "Set a proper value for 'generate_keys'. For instance, use 'keys_exp1'. Check the README.md" << endl;
+                    exit(1);
+                }
+
+                struct stat sb;
+                if (stat(("../" + folder).c_str(), &sb) == 0) {
+                    cerr << "The keys folder \"" << folder << "\" already exists, I will abort.";
+                    exit(1);
+                }
+                else {
+                    filesystem::create_directory("../" + folder);
+                }
+
+                controller.parameters_folder = folder;
+                cout << "Context folder set to: \"" << controller.parameters_folder << "\"." << endl;
+
             }
         }
         if (string(argv[i]) == "input") {
@@ -337,7 +437,6 @@ void check_arguments(int argc, char *argv[], bool default_generate) {
         }
     }
 
-    generate_context = default_generate;
 }
 
 vector<double> read_image(const char *filename) {

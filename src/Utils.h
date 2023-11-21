@@ -132,6 +132,31 @@ namespace utils {
         exit(1);
     }
 
+    static inline void write_to_file(string filename, string content) {
+        ofstream file;
+        file.open (filename);
+        file << content.c_str();
+        file.close();
+    }
+
+    static inline string read_from_file(string filename) {
+        //It reads only the first line!!
+        string line;
+        ifstream myfile (filename);
+        if (myfile.is_open()) {
+            if (getline(myfile, line)) {
+                myfile.close();
+                return line;
+            } else {
+                cerr << "Could not open " << filename << "." <<endl;
+                exit(1);
+            }
+        } else {
+            cerr << "Could not open " << filename << "." <<endl;
+            exit(1);
+        }
+    }
+
 
 }
 
