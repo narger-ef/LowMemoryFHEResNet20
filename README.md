@@ -86,24 +86,26 @@ Even for this argument, the starting position will be the root of the project.
 The output of the encrypted model is a vector consisting of 10 elements. In order to interpret it, it is enough to find the index of the maximum element. A sample output could be:
 
 ```
-[7.2524807010, -2.6369680214, -1.0997904940,  6.0638060424, -4.0936126151, -0.5967846282, -2.1562481052, -1.0855666688, -0.9119194165, -0.7291559490 ]
+output = [-2.6369, -1.0997,  6.0637, -4.0931, -0.5967, 7.2524, -2.1562, -1.0855, -0.9119, -0.7291]
 ```
-In this case, the maximum value is at position 0. Just translate it using the following dictionary (from ResNet20 pretrained on CIFAR-10):
+In this case, the maximum value is at position 5. Just translate it using the following dictionary (from ResNet20 pretrained on CIFAR-10):
 
-- 0: Airplane
-- 1: Automobile
-- 2: Bird
-- 3: Cat
-- 4: Deer
-- 5: Dog
-- 6: Frog
-- 7: Horse
-- 8: Ship
-- 9: Truck
+| Index of max 	| Class      	|
+|--------------	|------------	|
+| 0            	| Airplane   	|
+| 1            	| Automobile 	|
+| 2            	| Bird       	|
+| 3            	| Cat        	|
+| 4            	| Deer       	|
+| 5            	| Dog        	|
+| 6            	| Frog       	|
+| 7            	| Horse      	|
+| 8            	| Ship       	|
+| 9            	| Truck      	|
 
-In the sample output, the classified image was the following:
+In the sample output, the input image was the my dog Vale:
 
-<img src="inputs/airplane4.png" alt="Sample airplane input" width=8%>
+<img src="inputs/vale.jpg" alt="ResNet dog input image" width=6%>
 
 So it was correct!
 
