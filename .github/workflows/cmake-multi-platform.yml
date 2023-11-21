@@ -63,7 +63,7 @@ jobs:
         mkdir build &&
         cd build &&
         cmake .. &&
-        make install &&
+        sudo make install -j 8 &&
         cd .. &&
         cd .. &&
         cmake -B ${{ steps.strings.outputs.build-output-dir }}
