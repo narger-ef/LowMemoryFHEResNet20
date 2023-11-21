@@ -52,6 +52,7 @@ keys_exp3
 keys_exp4
 checkpoints
 build
+build_debug
 
 # OS generated files #
 ######################
