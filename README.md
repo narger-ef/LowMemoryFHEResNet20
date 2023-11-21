@@ -24,34 +24,65 @@ You can also use the `-j` flag in order to speed up the compilation, just put th
 cmake --build "build" --target LowMemoryFHEResNet20 -j 8
 ```
 
-### 2) Execute the project
+### 2) Creating the context
 
 After building, go to the created `build` folder:
-
 ```
 cd build
 ```
-and run it with the following command:
-```
-./LowMemoryFHEResNet20
-```
+Now it is possible to run the program! But we need to define a couple of arguments before:
 
-### 3) Custom arguments
-
-The default command creates a new context and classifies the default image in `inputs/louis.jpg`. We can, however, use custom arguments.
-We can use a set of serialized context and keys with the argument `context` as follows:
-
+- `generate_keys`, a value in `[params_exp1, params_exp2, params_exp3, params_exp4]`
+- `load_keys`, type: `string`
+- `input`, type: `string`
+  
+The first execution should be launched with the `generate_keys` argument, using the preferred set of parameters. Check the paper to see the differences between them. For instance, we choose the set of parameters defined in the first experiment:
 ```
-./LowMemoryFHEResNet20 context "parameters_first_experiment"
+./LowMemoryFHEResNet20 generate_keys "params_exp1"
 ```
-This command loads context and keys from the folder `parameters_first_experiment`, located in the root folder of the project.
+This command create the required keys and stores them in a new folder called `params_exp1`, in the root folder of the project.
 
-Lastly, in order to load a custom image, we use the argument `input`. Notice that the image MUST be a 32x32x3 RGB image in `.jpg` or `.png` format. We use the MIT-licensed [stb](https://github.com/nothings/stb) library in order to read it.
+### 3) Running the inference
 
+Now we are able to launch an inference process using the just created set of keys and parameters. Simply use
 ```
-./LowMemoryFHEResNet20 context "parameters_first_experiment" input "inputs/louis.jpg"
+./LowMemoryFHEResNet20 load_keys "params_exp1"
 ```
+This command loads context and keys from the folder `params_exp1`, located in the root folder of the project, and performs an inference. Since no image is given as input, the default image is located in `inputs/louis.jpg`. We can, however, pass a custom image using the `input` argument, as follows:.
+```
+./LowMemoryFHEResNet20 load_keys "params_exp1" input "inputs/airplane4.png"
+```
+Notice that the image MUST be a 32x32x3 RGB image in `.jpg` or `.png` format. We use the MIT-licensed [stb](https://github.com/nothings/stb) library in order to read it.
 Even for this argument, the starting position will be the root of the project.
+
+## Interpreting the output
+The output of the encrypted model is a vector consisting of 10 elements. In order to interpret it, it is enough to find the index of the maximum element. A sample output could be:
+
+```
+[7.2524807010, -2.6369680214, -1.0997904940,  6.0638060424, -4.0936126151, -0.5967846282, -2.1562481052, -1.0855666688, -0.9119194165, -0.7291559490 ]
+```
+In this case, the maximum value is at position 0. Just translate it using the following dictionary (from ResNet20 pretrained on CIFAR-10):
+
+- 0: Airplane
+- 1: Automobile
+- 2: Bird
+- 3: Cat
+- 4: Deer
+- 5: Dog
+- 6: Frog
+- 7: Horse
+- 8: Ship
+- 9: Truck
+
+In the sample output, the classified image was the following:
+
+<img src="inputs/airplane4.png" alt="Sample airplane input" width=8%>
+
+So it was correct!
+
+## Declaration
+
+This is a proof of concept and, even though parameters are created wtih $\lambda = 128$ security bits, this circuit should not be used in production.
 
 ---
 
