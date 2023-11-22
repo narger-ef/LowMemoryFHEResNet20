@@ -37,15 +37,19 @@ The idea is to use $b$, which, without the secret key $s$ would look like a rand
 
 1) The client encrypts the image using the public key.
 
-<img src="imgs/arch1.png" alt="Architecture description 1" width=50%>
+<img src="imgs/arch1.png" alt="Architecture description 1" width=45%>
 
-3) The server performs computations on it (following the definition of Fully Homomorphic Encryption)
+2) The server performs computations on it (following the definition of Fully Homomorphic Encryption)
 
-4) The server returns an encrypted vector containing the output of the last fully connected layer.
+<img src="imgs/arch2.png" alt="Architecture description 2" width=45%>
 
-5) Only the client, though, can "open" the ciphertext and see the result of the classifiction
+3) The server returns an encrypted vector containing the output of the last fully connected layer. The client is able to decrypt it and see the result
 
+<img src="imgs/arch3.png" alt="Architecture description 3" width=45%>
 
+4) The client finds the index of the maximum value and, using a dictionary, find the classified label
+
+<img src="imgs/arch4.png" alt="Architecture description 4" width=45%>
 
 
 ## How to run
