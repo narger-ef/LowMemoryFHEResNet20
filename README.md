@@ -34,14 +34,15 @@ Given a polynomial ring $\mathcal{R} = Z[X]/(X^N + 1)$ and small Gaussian distri
 
 The idea is to use $b$, which, without the secret key $s$ would look like a random element, to encrypt the image.
 
-
 1) The client encrypts the image using the public key.
 
 <img src="imgs/arch1.png" alt="Architecture description 1" width=45%>
 
+
 2) The server performs computations on it (following the definition of Fully Homomorphic Encryption)
 
 <img src="imgs/arch2.png" alt="Architecture description 2" width=45%>
+
 
 3) The server returns an encrypted vector containing the output of the last fully connected layer. The client is able to decrypt it and see the result
 
