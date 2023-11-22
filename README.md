@@ -12,7 +12,7 @@ The reference paper for this work is [Low memory overhead secure ResNet inferenc
 
 The key idea behind this work is to propose a solution to run a CNN in relative small time ($<5$ minutes on my MacBook M1 Pro with 16GB RAM) and, moreover, to use a small amount of memory.
 
-Existing works use a lot of memory ([]: $\approx$ 100GB, []: $\approx$ 500GB), while this implementation uses at most 16GB, making it usable by normal users.
+Existing works use a lot of memory ([3]: $\approx$ 100GB, [4]: $\approx$ 500GB), while this implementation uses at most 16GB, making it usable by normal users.
 
 ## Technical details
 
