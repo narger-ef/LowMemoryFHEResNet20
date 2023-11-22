@@ -57,7 +57,7 @@ and run it with the following command:
 - `generate_keys`, a value in `[params_exp1, params_exp2, params_exp3, params_exp4]`
 - `load_keys`, type: `string`
 - `input`, type: `string`
-- `verbose` a value in `[-1, 0, 1, 2]`
+- `verbose` a value in `[-1, 0, 1, 2]`, the first shows no information, the last shows a lot of messages
 
 
 The first execution should be launched with the `generate_keys` argument, using the preferred set of parameters. Check the paper to see the differences between them. For instance, we choose the set of parameters defined in the first experiment:
