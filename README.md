@@ -84,7 +84,7 @@ and run it with the following command:
 
 - `generate_keys`, a value in `[params_exp1, params_exp2, params_exp3, params_exp4]`
 - `load_keys`, type: `string`
-- `input`, type: `string`
+- `input`, type: `string`, the filename of a custom image. *MUST* be a three channel RGB 32x32 image either in `.jpg` or in `.png` format
 - `verbose` a value in `[-1, 0, 1, 2]`, the first shows no information, the last shows a lot of messages
 
 
