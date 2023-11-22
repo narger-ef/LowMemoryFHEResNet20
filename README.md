@@ -114,7 +114,7 @@ Even for this argument, the starting position will be the root of the project.
 The output of the encrypted model is a vector consisting of 10 elements. In order to interpret it, it is enough to find the index of the maximum element. A sample output could be:
 
 ```
-output = [-2.6369, -1.0997,  6.0637, -4.0931, -0.5967, 7.2524, -2.1562, -1.0855, -0.9119, -0.7291]
+output = [-2.633, -1.091,  6.063, -4.093, -0.5967, 7.252, -2.156, -1.085, -0.9119, -0.7291]
 ```
 In this case, the maximum value is at position 5. Just translate it using the following dictionary (from ResNet20 pretrained on CIFAR-10):
 
@@ -133,7 +133,19 @@ In this case, the maximum value is at position 5. Just translate it using the fo
 
 In the sample output, the input image was the my dog Vale:
 
-<img src="inputs/vale.jpg" alt="ResNet dog input image" width=6%>
+<img src="imgs/vale.png" alt="ResNet dog input image" width=20%>
+
+---
+
+Another output could be
+
+```
+output = [-0.719, -4.19, -0.252, 12.04, -4.979, 4.413, -0.5173, -1.038, -2.229, -2.504]
+```
+
+In this case, the index of max is 3, which is nice, since the input image was Luis, my brother's cat:
+
+<img src="imgs/luis.png" alt="ResNet cat input image" width=20%>
 
 So it was correct!
 
