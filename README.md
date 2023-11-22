@@ -163,8 +163,6 @@ Made with <3  at [Bicocca Security Lab](https://www.bislab.unimib.it), at Univer
 
 <img src="imgs/lab_logo.png" alt="BisLab logo" width=20%>
 
----
-
 ## Bibliography
 
 [1] Kim, A., Papadimitriou, A., & Polyakov, Y. (2022). 
