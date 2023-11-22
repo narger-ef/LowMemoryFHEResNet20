@@ -131,7 +131,7 @@ In this case, the maximum value is at position 5. Just translate it using the fo
 | 8            	| Ship       	|
 | 9            	| Truck      	|
 
-In the sample output, the input image was the my dog Vale:
+In the sample output, the input image was my dog Vale:
 
 <img src="imgs/vale.png" alt="ResNet dog input image" width=20%>
 
