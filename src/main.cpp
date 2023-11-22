@@ -60,8 +60,9 @@ int main(int argc, char *argv[]) {
      * REMOVE THESE LINES IN RELEASE
      */
 
-    //generate_context = 0;
-    //controller.parameters_folder = "keys_exp1";
+    generate_context = 0;
+    controller.parameters_folder = "keys_exp1";
+    verbose = 2;
 
     if (generate_context == -1) {
         cerr << "You either have to use the argument \"generate_keys\" or \"load_keys\"!\nIf it is your first time, you could try"
@@ -147,6 +148,7 @@ void executeResNet20() {
 
     if (verbose > 1) {
         print_intermediate_values = true;
+        print_bootstrap_precision = true;
     }
 
     if (input_filename.empty()) {
