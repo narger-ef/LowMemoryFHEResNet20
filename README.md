@@ -159,7 +159,7 @@ So it was correct!
 
 ## Declaration
 
-This is a proof of concept and, even though parameters are created wtih $\lambda = 128$ security bits, this circuit should not be used in production.
+This is a proof of concept and, even though parameters are created wtih $\lambda = 128$ security bits (according to [Homomorphic Encryption Standards](https://homomorphicencryption.org/standard)), this circuit should not be used in production.
 
 ## Authors
 (To be removed before submitting the paper)
