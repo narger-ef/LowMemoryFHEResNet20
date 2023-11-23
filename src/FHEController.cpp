@@ -432,7 +432,7 @@ Ctxt FHEController::mult(const Ctxt &c, const Ptxt& p) {
 }
 
 Ctxt FHEController::bootstrap(const Ctxt &c, bool timing) {
-    if (c->GetLevel() + 2 < circuit_depth && timing) {
+    if (static_cast<int>(c->GetLevel()) + 2 < circuit_depth && timing) {
         cout << "You are bootstrapping with remaining levels! You are at " << to_string(c->GetLevel()) << "/" << circuit_depth - 2 << endl;
     }
 
@@ -448,7 +448,7 @@ Ctxt FHEController::bootstrap(const Ctxt &c, bool timing) {
 }
 
 Ctxt FHEController::bootstrap(const Ctxt &c, int precision, bool timing) {
-    if (c->GetLevel() + 2 < circuit_depth) {
+    if (static_cast<int>(c->GetLevel()) + 2 < circuit_depth) {
         cout << "You are bootstrapping with remaining levels! You are at " << to_string(c->GetLevel()) << "/" << circuit_depth - 2 << endl;
     }
 
@@ -521,8 +521,10 @@ Ctxt FHEController::relu_wide(const Ctxt &c, double a, double b, int degree, dou
 Ctxt FHEController::read_input(const string& filename, double scale) {
     vector<double> input = read_values_from_file(filename);
 
+    int size = static_cast<int>(input.size());
+
     if (scale != 1) {
-        for (int i = 0;i<input.size(); i++) {
+        for (int i = 0; i < size; i++) {
             input[i] = input[i] * scale;
         }
     }
