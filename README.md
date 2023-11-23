@@ -57,18 +57,25 @@ The idea is to use $b$, which, without the secret key $s$ would look like a rand
 
 
 ## How to run
-In order to run the program OpenFHE needs to be installed in the system. Check [how to install OpenFHE](https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/intro/installation/installation.html).
+
+### Prerequisites
+Linux or Mac operative system, with at least 16GB of RAM.
+
+In order to run the program, you need to install:
+- `cmake`
+- `g++` or `clang`
+- `OpenFHE` ([how to install OpenFHE](https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/intro/installation/installation.html))
 
 ### 1) Build the project
 
-Build the project using this command:
+Setup the project using this command:
 ```
 mkdir build
-cmake --build "build" --target LowMemoryFHEResNet20
+cmake -B "build" -S LowMemoryFHEResNet20
 ```
-You can also use the `-j` flag in order to speed up the compilation, just put the number of cores of your machine. For instance:
+Then build it using
 ```
-cmake --build "build" --target LowMemoryFHEResNet20 -j 8
+cmake --build "build" --target
 ```
 
 ### 2) Execute the project
