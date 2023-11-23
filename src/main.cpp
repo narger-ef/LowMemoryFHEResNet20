@@ -486,7 +486,7 @@ void check_arguments(int argc, char *argv[]) {
                     exit(1);
                 }
                 else {
-                    filesystem::create_directory("../" + folder);
+                    mkdir(("../" + folder).c_str(), 0777);
                 }
 
                 controller.parameters_folder = folder;
