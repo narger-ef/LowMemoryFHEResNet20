@@ -141,7 +141,7 @@ In this case, the maximum value is at position 5. Just translate it using the fo
 
 In the sample output, the input image was my dog Vale:
 
-<img src="imgs/vale.png" alt="ResNet dog input image" width=20%>
+> <img src="imgs/vale.png" alt="ResNet dog input image" width=20%>
 
 ---
 
@@ -153,13 +153,13 @@ output = [-0.719, -4.19, -0.252, 12.04, -4.979, 4.413, -0.5173, -1.038, -2.229, 
 
 In this case, the index of max is 3, which is nice, since the input image was Luis, my brother's cat:
 
-<img src="imgs/luis.png" alt="ResNet cat input image" width=20%>
+> <img src="imgs/luis.png" alt="ResNet cat input image" width=20%>
 
 So it was correct!
 
 ## Declaration
 
-This is a proof of concept and, even though parameters are created wtih $\lambda = 128$ security bits, this circuit should not be used in production.
+This is a proof of concept and, even though parameters are created wtih $\lambda = 128$ security bits (according to [Homomorphic Encryption Standards](https://homomorphicencryption.org/standard)), this circuit should not be used in production.
 
 ## Authors
 (To be removed before submitting the paper)
