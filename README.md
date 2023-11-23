@@ -3,6 +3,7 @@
 <img src="imgs/console.png" alt="Console presentation image" width=85% >
 </center>
 
+<img src="https://github.com/narger-ef/LowMemoryFHEResNet20/actions/workflows/cmake-multi-platform.yml/badge.svg" alt="Console presentation image" width=25% >
 
 ---
 
