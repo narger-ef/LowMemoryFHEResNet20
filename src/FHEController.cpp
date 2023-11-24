@@ -28,7 +28,7 @@ void FHEController::generate_context(bool serialize) {
     parameters.SetScalingTechnique(rescaleTech);
     parameters.SetFirstModSize(firstMod);
 
-    uint32_t approxBootstrapDepth     = 8;
+    uint32_t approxBootstrapDepth = 4 + 4 + 1;
 
     uint32_t levelsUsedBeforeBootstrap = 10;
 
@@ -117,7 +117,7 @@ void FHEController::generate_context(int log_ring, int log_scale, int log_primes
     parameters.SetScalingTechnique(FLEXIBLEAUTO);
     parameters.SetFirstModSize(firstMod);
 
-    uint32_t approxBootstrapDepth = 8;
+    uint32_t approxBootstrapDepth = 4 + 4 + 1; //During EvalRaise, Chebyshev, DoubleAngle
 
     uint32_t levelsUsedBeforeBootstrap = get_relu_depth(relu_deg) + 3;
 
@@ -235,7 +235,7 @@ void FHEController::load_context(bool verbose) {
 
     if (verbose) cout << "CtoS: " << level_budget[0] << ", StoC: " << level_budget[1] << endl;
 
-    uint32_t approxBootstrapDepth = 8;
+    uint32_t approxBootstrapDepth = 4 + 4 + 1;
 
     uint32_t levelsUsedBeforeBootstrap = get_relu_depth(relu_degree) + 3;
 

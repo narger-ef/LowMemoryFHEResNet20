@@ -70,6 +70,7 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
+
     if (generate_context > 0) {
         switch (generate_context) {
             case 1:
@@ -152,8 +153,8 @@ void executeResNet20() {
     }
 
     if (input_filename.empty()) {
-        input_filename = "../inputs/louis.jpg";
-        if (verbose >= 0) cout << "You did not set any input, I use " << GREEN_TEXT << "../inputs/louis.jpg" << RESET_COLOR << "." << endl;
+        input_filename = "../inputs/luis.png";
+        if (verbose >= 0) cout << "You did not set any input, I use " << GREEN_TEXT << "../inputs/luis.png" << RESET_COLOR << "." << endl;
     } else {
         if (verbose >= 0) cout << "I am going to encrypt and classify " << GREEN_TEXT<< input_filename << RESET_COLOR << "." << endl;
     }

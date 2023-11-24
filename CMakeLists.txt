@@ -41,10 +41,9 @@ include_directories( ${OpenFHE_INCLUDE}/core )
 include_directories( ${OpenFHE_INCLUDE}/pke )
 include_directories( ${OpenFHE_INCLUDE}/binfhe )
 
-### add directories for other OpenFHE modules as needed for your project
-
 link_directories( ${OpenFHE_LIBDIR} )
 link_directories( ${OPENMP_LIBRARIES} )
+
 if(BUILD_STATIC)
     set( CMAKE_EXE_LINKER_FLAGS "${OpenFHE_EXE_LINKER_FLAGS} -static")
     link_libraries( ${OpenFHE_STATIC_LIBRARIES} )
@@ -53,8 +52,5 @@ else()
     link_libraries( ${OpenFHE_SHARED_LIBRARIES} )
 endif()
 
-### ADD YOUR EXECUTABLE(s) HERE
-### add_executable( EXECUTABLE-NAME SOURCES )
-###
-### EXAMPLE:
+
 add_executable(LowMemoryFHEResNet20 src/main.cpp src/FHEController.h src/FHEController.cpp src/Utils.h)
