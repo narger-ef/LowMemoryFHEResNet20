@@ -1,6 +1,6 @@
 ## Notebooks
 
-You can find notebooks for different reasons:
+You can find notebooks implementing a plain ResNet20 for different reasons:
 
 * `ExportingWeights.ipynb`: this shows the procedure used to export the weights of ResNet20, including the masking phase of `K` values
 
