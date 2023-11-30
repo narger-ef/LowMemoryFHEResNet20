@@ -480,7 +480,7 @@ Ctxt FHEController::relu(const Ctxt &c, double scale, bool timing) {
     context->Decrypt(key_pair.secretKey, c, &result);
     vector<double> v = result->GetRealPackedValue();
 
-    //cout << "min: " << *min_element(v.begin(), v.end()) << ", max: " << *max_element(v.begin(), v.end()) << endl;
+    cout << "min: " << *min_element(v.begin(), v.end()) << ", max: " << *max_element(v.begin(), v.end()) << endl;
     /*
      * Max min
      */

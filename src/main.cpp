@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
      *
      * REMOVE THESE LINES IN RELEASE
      */
-    generate_context = 3;
+    generate_context = 0;
     controller.parameters_folder = "keys_exp3";
     verbose = 2;
 
@@ -327,13 +327,12 @@ Ctxt layer3(const Ctxt& in) {
     res3 = controller.bootstrap(res3, timing);
     res3 = controller.relu(res3, scale, timing);
 
-    scale = 0.081;
+    scale = 0.1;
 
     res3 = controller.convbn3(res3, 9, 2, scale, timing);
     res3 = controller.add(res3, controller.mult(res2, scale));
-
     res3 = controller.bootstrap(res3, timing);
-    res3 = controller.relu(res3, 0.1, timing);
+    res3 = controller.relu(res3, scale, timing);
     res3 = controller.bootstrap(res3, timing);
 
     if (verbose > 1) print_duration(start, "Total");
