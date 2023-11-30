@@ -37,7 +37,8 @@ public:
      * Context generating/loading stuff
      */
     void generate_context(bool serialize = false);
-    void load_context();
+    void generate_context(int log_ring, int log_scale, int log_primes, int digits_hks, int cts_levels, int stc_levels, int relu_deg, bool serialize = false);
+    void load_context(bool verbose = true);
     /*
      * Generating bootstrapping and rotation keys stuff
      */
@@ -48,10 +49,11 @@ public:
                                                   bool serialize,
                                                   const string& filename);
 
-    void load_bootstrapping_and_rotation_keys(const string& filename, int bootstrap_slots);
-    void load_rotation_keys(const string& filename);
+    void load_bootstrapping_and_rotation_keys(const string& filename, int bootstrap_slots, bool verbose);
+    void load_rotation_keys(const string& filename, bool verbose);
     void clear_bootstrapping_and_rotation_keys(int bootstrap_num_slots);
     void clear_rotation_keys();
+    void clear_context(int bootstrapping_key_slots);
 
 
     /*
@@ -62,6 +64,7 @@ public:
     Ctxt encrypt(const vector<double>& vec, int level = 0, int plaintext_num_slots = 0);
     Ctxt encrypt_ptxt(const Ptxt& p);
     Ptxt decrypt(const Ctxt& c);
+    vector<double> decrypt_tovector(const Ctxt& c, int slots);
 
 
     /*
@@ -126,7 +129,7 @@ public:
     void bootstrap_precision(const Ctxt& c);
 
     int relu_degree = 119;
-    string parameters_folder = "parameters_thirdexp";
+    string parameters_folder = "NO_FOLDER";
 
 private:
     KeyPair<DCRTPoly> key_pair;
