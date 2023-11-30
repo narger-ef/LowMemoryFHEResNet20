@@ -46,10 +46,25 @@ _deps
 
 cmake-build-debug
 cmake-build-release
+
+build
+
+.ipynb_checkpoints
+notebooks/data
+build_debug
+
+parameters_firstexp
+parameters_secondexp
+parameters_thirdexp
+parameters_fourthexp
+
+cifar10.tgz
+
 keys_exp1
 keys_exp2
 keys_exp3
 keys_exp4
+
 checkpoints
 build
 build_debug

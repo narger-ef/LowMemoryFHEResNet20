@@ -70,16 +70,51 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
+    /*
+     * LINES ADDED FOR DEBUG
+     *******************************
+     *
+
+    generate_context = 1;
+    string folder = "keys_exp1";
+    controller.parameters_folder = folder;
+    struct stat sb;
+    if (stat(("../" + folder).c_str(), &sb) == 0) {
+        cerr << "The keys folder \"" << folder << "\" already exists, I will abort.";
+        exit(1);
+    }
+    else {
+        filesystem::create_directory("../" + folder);
+    }
+     *
+     * *****************************
+     *
+     * REMOVE THESE LINES IN RELEASE
+     */
+
+    generate_context = 0;
+    controller.parameters_folder = "keys_exp3";
+    verbose = 2;
+
+    if (generate_context == -1) {
+        cerr << "You either have to use the argument \"generate_keys\" or \"load_keys\"!\nIf it is your first time, you could try"
+                "with \"./LowMemoryFHEResNet20 generate_keys \"keys_exp1\"\nCheck the README.md.\nAborting. :-(" << endl;
+        exit(1);
+    }
+
 
     if (generate_context > 0) {
         switch (generate_context) {
             case 1:
-                //Parameters for experiment 1 \approx 13.2GB As it is, precision boot 9.6.
-                controller.generate_context(16, 52, 48, 2, 3,3, 59, true);
+                controller.generate_context(16, 52, 48, 2, 3, 3, 59, true);
+                break;
+            case 2:
+                controller.generate_context(16, 50, 46, 3, 4, 4, 200, true);
                 break;
             case 3:
-                //Parameters for experiment 3
-                controller.generate_context(16, 52, 47, 3, 4, 4, 119, true);
+                controller.generate_context(16, 50, 46, 3, 5, 4, 119, true);
+                break;
+            case 4:
                 break;
             default:
                 controller.generate_context(true);
@@ -161,6 +196,8 @@ void executeResNet20() {
 
     vector<double> input_image = read_image(input_filename.c_str());
 
+    cout << "Lo cifro al " << controller.circuit_depth - 4 - get_relu_depth(controller.relu_degree) << " su " << controller.circuit_depth << endl;
+
     Ctxt in = controller.encrypt(input_image, controller.circuit_depth - 4 - get_relu_depth(controller.relu_degree));
 
     controller.load_bootstrapping_and_rotation_keys("rotations-layer1.bin", 16384, verbose > 1);
@@ -174,6 +211,8 @@ void executeResNet20() {
     firstLayer = initial_layer(in);
     if (print_intermediate_values) controller.print(firstLayer, 16384, "Initial layer: ");
 
+    cout << "Initial layer esce al " << firstLayer->GetLevel() << endl;
+  
     /*
      * Layer 1: 16 channels of 32x32
      */
@@ -212,7 +251,7 @@ void executeResNet20() {
 }
 
 Ctxt initial_layer(const Ctxt& in) {
-    double scale = 0.6;
+    double scale = 0.90;
 
     Ctxt res = controller.convbn_initial(in, scale, verbose > 1);
     res = controller.relu(res, scale, verbose > 1);
@@ -256,15 +295,17 @@ Ctxt final_layer(const Ctxt& in) {
 }
 
 Ctxt layer3(const Ctxt& in) {
-    double scale = 0.4;
+    double scaleSx = 0.63;
+    double scaleDx = 0.40;
 
     bool timing = verbose > 1;
 
     if (verbose > 1) cout << "---Start: Layer3 - Block 1---" << endl;
     auto start = start_time();
     Ctxt boot_in = controller.bootstrap(in, timing);
-    vector<Ctxt> res1sx = controller.convbn3264sx(boot_in, 7, 1, scale, timing); //Questo è lento
-    vector<Ctxt> res1dx = controller.convbn3264dx(boot_in, 7, 1, scale, timing); //Questo è lento
+
+    vector<Ctxt> res1sx = controller.convbn3264sx(boot_in, 7, 1, scaleSx, timing); //Questo è lento
+    vector<Ctxt> res1dx = controller.convbn3264dx(boot_in, 7, 1, scaleDx, timing); //Questo è lento
 
     controller.clear_bootstrapping_and_rotation_keys(8192);
     controller.load_rotation_keys("rotations-layer3-downsample.bin", timing);
@@ -280,13 +321,17 @@ Ctxt layer3(const Ctxt& in) {
 
     controller.num_slots = 4096;
     fullpackSx = controller.bootstrap(fullpackSx, timing);
-    fullpackSx = controller.relu(fullpackSx, scale, timing);
-    fullpackSx = controller.convbn3(fullpackSx, 7, 2, scale, timing);
+
+    fullpackSx = controller.relu(fullpackSx, scaleSx, timing);
+    fullpackSx = controller.convbn3(fullpackSx, 7, 2, scaleDx, timing);
     Ctxt res1 = controller.add(fullpackSx, fullpackDx);
     res1 = controller.bootstrap(res1, timing);
-    res1 = controller.relu(res1, scale, timing);
-    if (verbose > 1)print_duration(start, "Total");
+    res1 = controller.relu(res1, scaleDx, timing);
+    if (verbose > 1) print_duration(start, "Total");
     if (verbose > 1) cout << "---End  : Layer3 - Block 1---" << endl;
+
+    double scale = 0.57;
+
 
     if (verbose > 1) cout << "---Start: Layer3 - Block 2---" << endl;
     start = start_time();
@@ -294,12 +339,17 @@ Ctxt layer3(const Ctxt& in) {
     res2 = controller.convbn3(res1, 8, 1, scale, timing);
     res2 = controller.bootstrap(res2, timing);
     res2 = controller.relu(res2, scale, timing);
+
+    scale = 0.33;
+
     res2 = controller.convbn3(res2, 8, 2, scale, timing);
     res2 = controller.add(res2, controller.mult(res1, scale));
     res2 = controller.bootstrap(res2, timing);
     res2 = controller.relu(res2, scale, timing);
     if (verbose > 1) print_duration(start, "Total");
     if (verbose > 1) cout << "---End  : Layer3 - Block 2---" << endl;
+
+    scale = 0.69;
 
     if (verbose > 1) cout << "---Start: Layer3 - Block 3---" << endl;
     start = start_time();
@@ -309,8 +359,11 @@ Ctxt layer3(const Ctxt& in) {
     res3 = controller.bootstrap(res3, timing);
     res3 = controller.relu(res3, scale, timing);
 
-    res3 = controller.convbn3(res3, 9, 2, 0.1, timing);
-    res3 = controller.add(res3, controller.mult(res2, 0.1));
+    scale = 0.081;
+
+    res3 = controller.convbn3(res3, 9, 2, scale, timing);
+    res3 = controller.add(res3, controller.mult(res2, scale));
+
     res3 = controller.bootstrap(res3, timing);
     res3 = controller.relu(res3, 0.1, timing);
     res3 = controller.bootstrap(res3, timing);
@@ -323,15 +376,21 @@ Ctxt layer3(const Ctxt& in) {
 }
 
 Ctxt layer2(const Ctxt& in) {
-    double scale = 0.5;
+
+    double scaleSx = 0.57;
+    double scaleDx = 0.40;
+
 
     bool timing = verbose > 1;
 
     if (verbose > 1) cout << "---Start: Layer2 - Block 1---" << endl;
     auto start = start_time();
     Ctxt boot_in = controller.bootstrap(in, timing);
-    vector<Ctxt> res1sx = controller.convbn1632sx(boot_in, 4, 1, scale, timing); //Questo è lento
-    vector<Ctxt> res1dx = controller.convbn1632dx(boot_in, 4, 1, scale, timing); //Questo è lento
+
+    vector<Ctxt> res1sx = controller.convbn1632sx(boot_in, 4, 1, scaleSx, timing); //Questo è lento
+
+    vector<Ctxt> res1dx = controller.convbn1632dx(boot_in, 4, 1, scaleDx, timing); //Questo è lento
+
 
     controller.clear_bootstrapping_and_rotation_keys(16384);
     controller.load_rotation_keys("rotations-layer2-downsample.bin", timing);
@@ -348,13 +407,18 @@ Ctxt layer2(const Ctxt& in) {
 
     controller.num_slots = 8192;
     fullpackSx = controller.bootstrap(fullpackSx, timing);
-    fullpackSx = controller.relu(fullpackSx, scale, timing);
-    fullpackSx = controller.convbn2(fullpackSx, 4, 2, scale, timing);
+
+    fullpackSx = controller.relu(fullpackSx, scaleSx, timing);
+
+    //I use the scale of the right branch since they will be added together
+    fullpackSx = controller.convbn2(fullpackSx, 4, 2, scaleDx, timing);
     Ctxt res1 = controller.add(fullpackSx, fullpackDx);
     res1 = controller.bootstrap(res1, timing);
-    res1 = controller.relu(res1, scale, timing);
+    res1 = controller.relu(res1, scaleDx, timing);
     if (verbose > 1) print_duration(start, "Total");
     if (verbose > 1) cout << "---End  : Layer2 - Block 1---" << endl;
+
+    double scale = 0.76;
 
     if (verbose > 1) cout << "---Start: Layer2 - Block 2---" << endl;
     start = start_time();
@@ -362,6 +426,9 @@ Ctxt layer2(const Ctxt& in) {
     res2 = controller.convbn2(res1, 5, 1, scale, timing);
     res2 = controller.bootstrap(res2, timing);
     res2 = controller.relu(res2, scale, timing);
+
+    scale = 0.37;
+
     res2 = controller.convbn2(res2, 5, 2, scale, timing);
     res2 = controller.add(res2, controller.mult(res1, scale));
     res2 = controller.bootstrap(res2, timing);
@@ -369,12 +436,17 @@ Ctxt layer2(const Ctxt& in) {
     if (verbose > 1) print_duration(start, "Total");
     if (verbose > 1) cout << "---End  : Layer2 - Block 2---" << endl;
 
+    scale = 0.63;
+
     if (verbose > 1) cout << "---Start: Layer2 - Block 3---" << endl;
     start = start_time();
     Ctxt res3;
     res3 = controller.convbn2(res2, 6, 1, scale, timing);
     res3 = controller.bootstrap(res3, timing);
     res3 = controller.relu(res3, scale, timing);
+  
+    scale = 0.25;
+
     res3 = controller.convbn2(res3, 6, 2, scale, timing);
     res3 = controller.add(res3, controller.mult(res2, scale));
     res3 = controller.bootstrap(res3, timing);
@@ -386,9 +458,9 @@ Ctxt layer2(const Ctxt& in) {
 }
 
 Ctxt layer1(const Ctxt& in) {
-    double scale = 0.65;
-
     bool timing = verbose > 1;
+    double scale = 1.00;
+
 
     if (verbose > 1) cout << "---Start: Layer1 - Block 1---" << endl;
     auto start = start_time();
@@ -396,6 +468,9 @@ Ctxt layer1(const Ctxt& in) {
     res1 = controller.convbn(in, 1, 1, scale, timing);
     res1 = controller.bootstrap(res1, timing);
     res1 = controller.relu(res1, scale, timing);
+
+    scale = 0.52;
+
     res1 = controller.convbn(res1, 1, 2, scale, timing);
     res1 = controller.add(res1, controller.mult(in, scale));
     res1 = controller.bootstrap(res1, timing);
@@ -403,8 +478,8 @@ Ctxt layer1(const Ctxt& in) {
     if (verbose > 1) print_duration(start, "Total");
     if (verbose > 1) cout << "---End  : Layer1 - Block 1---" << endl;
 
-
     scale = 0.55;
+
 
     if (verbose > 1) cout << "---Start: Layer1 - Block 2---" << endl;
     start = start_time();
@@ -412,14 +487,17 @@ Ctxt layer1(const Ctxt& in) {
     res2 = controller.convbn(res1, 2, 1, scale, timing);
     res2 = controller.bootstrap(res2, timing);
     res2 = controller.relu(res2, scale, timing);
+
+    scale = 0.36;
+
     res2 = controller.convbn(res2, 2, 2, scale, timing);
     res2 = controller.add(res2, controller.mult(res1, scale));
     res2 = controller.bootstrap(res2, timing);
     res2 = controller.relu(res2, scale, timing);
     if (verbose > 1) print_duration(start, "Total");
     if (verbose > 1) cout << "---End  : Layer1 - Block 2---" << endl;
-
-    scale = 0.5;
+  
+    scale = 0.63;
 
     if (verbose > 1) cout << "---Start: Layer1 - Block 3---" << endl;
     start = start_time();
@@ -427,6 +505,9 @@ Ctxt layer1(const Ctxt& in) {
     res3 = controller.convbn(res2, 3, 1, scale, timing);
     res3 = controller.bootstrap(res3, timing);
     res3 = controller.relu(res3, scale, timing);
+
+    scale = 0.42;
+  
     res3 = controller.convbn(res3, 3, 2, scale, timing);
     res3 = controller.add(res3, controller.mult(res2, scale));
     res3 = controller.bootstrap(res3, timing);

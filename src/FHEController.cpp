@@ -28,7 +28,7 @@ void FHEController::generate_context(bool serialize) {
     parameters.SetScalingTechnique(rescaleTech);
     parameters.SetFirstModSize(firstMod);
 
-    uint32_t approxBootstrapDepth = 4 + 4 + 1;
+    uint32_t approxBootstrapDepth = 4 + 4;
 
     uint32_t levelsUsedBeforeBootstrap = 10;
 
@@ -107,6 +107,7 @@ void FHEController::generate_context(int log_ring, int log_scale, int log_primes
     parameters.SetBatchSize(num_slots);
 
     level_budget = vector<uint32_t>();
+
     level_budget.push_back(cts_levels);
     level_budget.push_back(stc_levels);
 
@@ -117,7 +118,7 @@ void FHEController::generate_context(int log_ring, int log_scale, int log_primes
     parameters.SetScalingTechnique(FLEXIBLEAUTO);
     parameters.SetFirstModSize(firstMod);
 
-    uint32_t approxBootstrapDepth = 4 + 4 + 1; //During EvalRaise, Chebyshev, DoubleAngle
+    uint32_t approxBootstrapDepth = 4 + 4; //During EvalRaise, Chebyshev, DoubleAngle
 
     uint32_t levelsUsedBeforeBootstrap = get_relu_depth(relu_deg) + 3;
 
@@ -235,7 +236,7 @@ void FHEController::load_context(bool verbose) {
 
     if (verbose) cout << "CtoS: " << level_budget[0] << ", StoC: " << level_budget[1] << endl;
 
-    uint32_t approxBootstrapDepth = 4 + 4 + 1;
+    uint32_t approxBootstrapDepth = 4 + 4;  
 
     uint32_t levelsUsedBeforeBootstrap = get_relu_depth(relu_degree) + 3;
 
@@ -436,9 +437,14 @@ Ctxt FHEController::bootstrap(const Ctxt &c, bool timing) {
         cout << "You are bootstrapping with remaining levels! You are at " << to_string(c->GetLevel()) << "/" << circuit_depth - 2 << endl;
     }
 
+
+    cout <<"Lv. bootstr: " << c->GetLevel() << endl;
+
     auto start = start_time();
 
     Ctxt res = context->EvalBootstrap(c);
+
+    cout <<"Lv. aft bootstr: " << res->GetLevel() << endl;
 
     if (timing) {
         print_duration(start, "Bootstrapping " + to_string(c->GetSlots()) + " slots");
@@ -459,6 +465,7 @@ Ctxt FHEController::bootstrap(const Ctxt &c, int precision, bool timing) {
     if (timing) {
         print_duration(start, "Double Bootstrapping " + to_string(c->GetSlots()) + " slots");
     }
+
 
     return res;
 }
@@ -481,6 +488,7 @@ Ctxt FHEController::relu(const Ctxt &c, double scale, bool timing) {
     Ctxt res = context->EvalChebyshevFunction([scale](double x) -> double { if (x < 0) return 0; else return (1 / scale) * x; }, c,
                                               -1,
                                               1, relu_degree);
+
     if (timing) {
         print_duration(start, "ReLU d = " + to_string(relu_degree) + " evaluation");
     }
@@ -740,7 +748,7 @@ Ctxt FHEController::convbn(const Ctxt &in, int layer, int n, double scale, bool 
     finalsum = context->EvalAdd(finalsum, bias);
 
     if (timing) {
-        print_duration(start, "Layer" + to_string(layer) + " - convbn" + to_string(n));
+        print_duration(start, "Block " + to_string(layer) + " - convbn" + to_string(n));
     }
 
     return finalsum;
@@ -798,7 +806,7 @@ Ctxt FHEController::convbn2(const Ctxt &in, int layer, int n, double scale, bool
     finalsum = context->EvalAdd(finalsum, bias);
 
     if (timing) {
-        print_duration(start, "Layer" + to_string(layer) + " - convbn" + to_string(n));
+        print_duration(start, "Block " + to_string(layer) + " - convbn" + to_string(n));
     }
 
     return finalsum;
@@ -856,7 +864,7 @@ Ctxt FHEController::convbn3(const Ctxt &in, int layer, int n, double scale, bool
     finalsum = context->EvalAdd(finalsum, bias);
 
     if (timing) {
-        print_duration(start, "Layer" + to_string(layer) + " - convbn" + to_string(n));
+        print_duration(start, "Block" + to_string(layer) + " - convbn" + to_string(n));
     }
 
     return finalsum;
@@ -931,7 +939,7 @@ vector<Ctxt> FHEController::convbn1632sx(const Ctxt &in, int layer, int n, doubl
     finalSum1632 = context->EvalAdd(finalSum1632, bias2);
 
     if (timing) {
-        print_duration(start, "Layer" + to_string(layer) + " - convbnSx" + to_string(n));
+        print_duration(start, "Block " + to_string(layer) + " - convbnSx" + to_string(n));
     }
 
     return {finalSum016, finalSum1632};
@@ -983,7 +991,7 @@ vector<Ctxt> FHEController::convbn1632dx(const Ctxt &in, int layer, int n, doubl
     finalSum1632 = context->EvalAdd(finalSum1632, bias2);
 
     if (timing) {
-        print_duration(start, "Layer" + to_string(layer) + " - convbnDx" + to_string(n));
+        print_duration(start, "Block " + to_string(layer) + " - convbnDx" + to_string(n));
     }
 
     return {finalSum016, finalSum1632};
@@ -1058,7 +1066,7 @@ vector<Ctxt> FHEController::convbn3264sx(const Ctxt &in, int layer, int n, doubl
     finalSum3264 = context->EvalAdd(finalSum3264, bias2);
 
     if (timing) {
-        print_duration(start, "Layer" + to_string(layer) + " - convbnSx" + to_string(n));
+        print_duration(start, "Block " + to_string(layer) + " - convbnSx" + to_string(n));
     }
 
     return {finalSum032, finalSum3264};
@@ -1110,7 +1118,7 @@ vector<Ctxt> FHEController::convbn3264dx(const Ctxt &in, int layer, int n, doubl
     finalSum3264 = context->EvalAdd(finalSum3264, bias2);
 
     if (timing) {
-        print_duration(start, "Layer" + to_string(layer) + " - convbnDx" + to_string(n));
+        print_duration(start, "Block " + to_string(layer) + " - convbnDx" + to_string(n));
     }
 
     return {finalSum032, finalSum3264};
@@ -1120,9 +1128,15 @@ Ctxt FHEController::downsample1024to256(const Ctxt &c1, const Ctxt &c2) {
     c1->SetSlots(32768);
     c2->SetSlots(32768);
     num_slots = 16384*2;
+
+    /*
+     * We put the first 16384 and the second 16384 values in a single ciphertext, so that we simplify computations
+     */
     Ctxt fullpack = add(mult(c1, mask_first_n(16384, c1->GetLevel())), mult(c2, mask_second_n(16384, c2->GetLevel())));
 
-    //Affianco tutte le righe
+    /*
+     * We first juxtapose the values in the rows
+     */
     fullpack = context->EvalMult(context->EvalAdd(fullpack, context->EvalRotate(fullpack, 1)), gen_mask(2, fullpack->GetLevel()));
     fullpack = context->EvalMult(context->EvalAdd(fullpack, context->EvalRotate(context->EvalRotate(fullpack, 1), 1)), gen_mask(4, fullpack->GetLevel()));
     fullpack = context->EvalMult(context->EvalAdd(fullpack, context->EvalRotate(fullpack, 4)), gen_mask(8, fullpack->GetLevel()));
@@ -1131,6 +1145,9 @@ Ctxt FHEController::downsample1024to256(const Ctxt &c1, const Ctxt &c2) {
     Ctxt downsampledrows = encrypt({0});
 
 
+    /*
+     * Then, the rows themselves (this method is a little bit slower, but requires one Automorphism Key)
+     */
     for (int i = 0; i < 16; i++) {
         Ctxt masked = context->EvalMult(fullpack, mask_first_n_mod(16, 1024, i, fullpack->GetLevel()));
         downsampledrows = context->EvalAdd(downsampledrows, masked);
@@ -1139,6 +1156,9 @@ Ctxt FHEController::downsample1024to256(const Ctxt &c1, const Ctxt &c2) {
         }
     }
 
+    /*
+     * Lastly, the channels
+     */
     Ctxt downsampledchannels = encrypt({0});
     for (int i = 0; i < 32; i++) {
         Ctxt masked = context->EvalMult(downsampledrows, mask_channel(i, downsampledrows->GetLevel()));
@@ -1296,7 +1316,7 @@ Ctxt FHEController::convbn1632sxV2(const Ctxt &in, int layer, int n, double scal
     finalSum = context->EvalAdd(finalSum, bias1);
 
     if (timing) {
-        print_duration(start, "Layer" + to_string(layer) + " - convbn" + to_string(n));
+        print_duration(start, "Block " + to_string(layer) + " - convbn" + to_string(n));
     }
 
     return finalSum;
@@ -1344,7 +1364,7 @@ Ctxt FHEController::convbn1632dxV2(const Ctxt &in, int layer, int n, double scal
     finalSum = context->EvalAdd(finalSum, bias);
 
     if (timing) {
-        print_duration(start, "Layer" + to_string(layer) + " - convbn" + to_string(n));
+        print_duration(start, "Block " + to_string(layer) + " - convbn" + to_string(n));
     }
 
     return finalSum;
