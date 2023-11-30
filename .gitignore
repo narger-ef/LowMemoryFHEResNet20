@@ -50,11 +50,14 @@ build
 
 .ipynb_checkpoints
 notebooks/data
+build_debug
 
 parameters_firstexp
 parameters_secondexp
 parameters_thirdexp
 parameters_fourthexp
+
+Cifar10.tgz
 
 keys_exp1
 keys_exp3

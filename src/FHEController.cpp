@@ -27,7 +27,7 @@ void FHEController::generate_context(bool serialize) {
     parameters.SetScalingTechnique(rescaleTech);
     parameters.SetFirstModSize(firstMod);
 
-    uint32_t approxBootstrapDepth     = 8;
+    uint32_t approxBootstrapDepth = 4 + 4;
 
     uint32_t levelsUsedBeforeBootstrap = 10;
 
@@ -92,7 +92,104 @@ void FHEController::generate_context(bool serialize) {
     }
 }
 
-void FHEController::load_context() {
+void FHEController::generate_context(int log_ring, int log_scale, int log_primes, int digits_hks, int cts_levels,
+                                     int stc_levels, int relu_deg, bool serialize) {
+
+    CCParams<CryptoContextCKKSRNS> parameters;
+
+    num_slots = 1 << 14;
+
+    parameters.SetSecretKeyDist(SPARSE_TERNARY);
+    parameters.SetSecurityLevel(lbcrypto::HEStd_128_classic);
+    parameters.SetNumLargeDigits(digits_hks);
+    parameters.SetRingDim(1 << log_ring);
+    parameters.SetBatchSize(num_slots);
+
+    level_budget = vector<uint32_t>();
+
+    level_budget.push_back(cts_levels);
+    level_budget.push_back(stc_levels);
+
+    int dcrtBits = log_primes;
+    int firstMod = log_scale;
+
+    parameters.SetScalingModSize(dcrtBits);
+    parameters.SetScalingTechnique(FLEXIBLEAUTO);
+    parameters.SetFirstModSize(firstMod);
+
+    uint32_t approxBootstrapDepth = 4 + 4; //During EvalRaise, Chebyshev, DoubleAngle
+
+    uint32_t levelsUsedBeforeBootstrap = get_relu_depth(relu_deg) + 3;
+
+    //<relu_degree> is at class-level, <relu_deg> is the input of the function
+    relu_degree = relu_deg;
+
+    write_to_file("../" + parameters_folder + "/relu_degree.txt", to_string(relu_deg));
+    write_to_file("../" + parameters_folder + "/level_budget.txt", to_string(level_budget[0]) + "," + to_string(level_budget[1]));
+
+    circuit_depth = levelsUsedBeforeBootstrap +
+                    FHECKKSRNS::GetBootstrapDepth(approxBootstrapDepth, level_budget, SPARSE_TERNARY);
+
+    cout << endl << "Ciphertexts depth: " << circuit_depth << ", available multiplications: "
+         << levelsUsedBeforeBootstrap - 2 << endl;
+
+    parameters.SetMultiplicativeDepth(circuit_depth);
+
+    context = GenCryptoContext(parameters);
+
+    cout << "Context built, generating keys..." << endl;
+
+    context->Enable(PKE);
+    context->Enable(KEYSWITCH);
+    context->Enable(LEVELEDSHE);
+    context->Enable(ADVANCEDSHE);
+    context->Enable(FHE);
+
+    key_pair = context->KeyGen();
+
+    context->EvalMultKeyGen(key_pair.secretKey);
+
+    cout << "Generated." << endl;
+
+    if (!serialize) {
+        return;
+    }
+
+    cout << "Now serializing keys ..." << endl;
+
+    ofstream multKeyFile("../" + parameters_folder + "/mult-keys.txt", ios::out | ios::binary);
+    if (multKeyFile.is_open()) {
+        if (!context->SerializeEvalMultKey(multKeyFile, SerType::BINARY)) {
+            cerr << "Error writing EvalMult keys" << std::endl;
+            exit(1);
+        }
+        cout << "EvalMult keys have been serialized" << std::endl;
+        multKeyFile.close();
+    } else {
+        cerr << "Error serializing EvalMult keys in \"" << "../" + parameters_folder + "/mult-keys.txt" << "\"" << endl;
+        exit(1);
+    }
+
+    if (!Serial::SerializeToFile("../" + parameters_folder + "/crypto-context.txt", context, SerType::BINARY)) {
+        cerr << "Error writing serialization of the crypto context to crypto-context.txt" << endl;
+    } else {
+        cout << "Crypto Context have been serialized" << std::endl;
+    }
+
+    if (!Serial::SerializeToFile("../" + parameters_folder + "/public-key.txt", key_pair.publicKey, SerType::BINARY)) {
+        cerr << "Error writing serialization of public key to public-key.txt" << endl;
+    } else {
+        cout << "Public Key has been serialized" << std::endl;
+    }
+
+    if (!Serial::SerializeToFile("../" + parameters_folder + "/secret-key.txt", key_pair.secretKey, SerType::BINARY)) {
+        cerr << "Error writing serialization of public key to secret-key.txt" << endl;
+    } else {
+        cout << "Secret Key has been serialized" << std::endl;
+    }
+}
+
+void FHEController::load_context(bool verbose) {
     context->ClearEvalMultKeys();
     context->ClearEvalAutomorphismKeys();
 
@@ -132,7 +229,15 @@ void FHEController::load_context() {
 
     uint32_t approxBootstrapDepth = 8;
 
-    uint32_t levelsUsedBeforeBootstrap = 10;
+    //level_budget.txt contains "X, Y", X is at(0), Y is at(2)
+    level_budget[0] = read_from_file("../" + parameters_folder + "/level_budget.txt").at(0) - '0';
+    level_budget[1] = read_from_file("../" + parameters_folder + "/level_budget.txt").at(2) - '0';
+
+    if (verbose) cout << "CtoS: " << level_budget[0] << ", StoC: " << level_budget[1] << endl;
+
+    uint32_t approxBootstrapDepth = 4 + 4;
+
+    uint32_t levelsUsedBeforeBootstrap = get_relu_depth(relu_degree) + 3;
 
     circuit_depth = levelsUsedBeforeBootstrap + FHECKKSRNS::GetBootstrapDepth(approxBootstrapDepth, level_budget, SPARSE_TERNARY);
 
@@ -309,9 +414,14 @@ Ctxt FHEController::bootstrap(const Ctxt &c, bool timing) {
         cout << "You are bootstrapping with remaining levels! You are at " << to_string(c->GetLevel()) << "/" << circuit_depth - 2 << endl;
     }
 
+
+    cout <<"Lv. bootstr: " << c->GetLevel() << endl;
+
     auto start = start_time();
 
     Ctxt res = context->EvalBootstrap(c);
+
+    cout <<"Lv. aft bootstr: " << res->GetLevel() << endl;
 
     if (timing) {
         print_duration(start, "Bootstrapping " + to_string(c->GetSlots()) + " slots");
@@ -332,6 +442,7 @@ Ctxt FHEController::bootstrap(const Ctxt &c, int precision, bool timing) {
     if (timing) {
         print_duration(start, "Double Bootstrapping " + to_string(c->GetSlots()) + " slots");
     }
+
 
     return res;
 }
@@ -354,6 +465,7 @@ Ctxt FHEController::relu(const Ctxt &c, double scale, bool timing) {
     Ctxt res = context->EvalChebyshevFunction([scale](double x) -> double { if (x < 0) return 0; else return (1 / scale) * x; }, c,
                                               -1,
                                               1, relu_degree);
+
     if (timing) {
         print_duration(start, "ReLU d = " + to_string(relu_degree) + " evaluation");
     }
@@ -609,7 +721,7 @@ Ctxt FHEController::convbn(const Ctxt &in, int layer, int n, double scale, bool 
     finalsum = context->EvalAdd(finalsum, bias);
 
     if (timing) {
-        print_duration(start, "Layer" + to_string(layer) + " - convbn" + to_string(n));
+        print_duration(start, "Block " + to_string(layer) + " - convbn" + to_string(n));
     }
 
     return finalsum;
@@ -667,7 +779,7 @@ Ctxt FHEController::convbn2(const Ctxt &in, int layer, int n, double scale, bool
     finalsum = context->EvalAdd(finalsum, bias);
 
     if (timing) {
-        print_duration(start, "Layer" + to_string(layer) + " - convbn" + to_string(n));
+        print_duration(start, "Block " + to_string(layer) + " - convbn" + to_string(n));
     }
 
     return finalsum;
@@ -725,7 +837,7 @@ Ctxt FHEController::convbn3(const Ctxt &in, int layer, int n, double scale, bool
     finalsum = context->EvalAdd(finalsum, bias);
 
     if (timing) {
-        print_duration(start, "Layer" + to_string(layer) + " - convbn" + to_string(n));
+        print_duration(start, "Block" + to_string(layer) + " - convbn" + to_string(n));
     }
 
     return finalsum;
@@ -800,7 +912,7 @@ vector<Ctxt> FHEController::convbn1632sx(const Ctxt &in, int layer, int n, doubl
     finalSum1632 = context->EvalAdd(finalSum1632, bias2);
 
     if (timing) {
-        print_duration(start, "Layer" + to_string(layer) + " - convbnSx" + to_string(n));
+        print_duration(start, "Block " + to_string(layer) + " - convbnSx" + to_string(n));
     }
 
     return {finalSum016, finalSum1632};
@@ -852,7 +964,7 @@ vector<Ctxt> FHEController::convbn1632dx(const Ctxt &in, int layer, int n, doubl
     finalSum1632 = context->EvalAdd(finalSum1632, bias2);
 
     if (timing) {
-        print_duration(start, "Layer" + to_string(layer) + " - convbnDx" + to_string(n));
+        print_duration(start, "Block " + to_string(layer) + " - convbnDx" + to_string(n));
     }
 
     return {finalSum016, finalSum1632};
@@ -927,7 +1039,7 @@ vector<Ctxt> FHEController::convbn3264sx(const Ctxt &in, int layer, int n, doubl
     finalSum3264 = context->EvalAdd(finalSum3264, bias2);
 
     if (timing) {
-        print_duration(start, "Layer" + to_string(layer) + " - convbnSx" + to_string(n));
+        print_duration(start, "Block " + to_string(layer) + " - convbnSx" + to_string(n));
     }
 
     return {finalSum032, finalSum3264};
@@ -979,7 +1091,7 @@ vector<Ctxt> FHEController::convbn3264dx(const Ctxt &in, int layer, int n, doubl
     finalSum3264 = context->EvalAdd(finalSum3264, bias2);
 
     if (timing) {
-        print_duration(start, "Layer" + to_string(layer) + " - convbnDx" + to_string(n));
+        print_duration(start, "Block " + to_string(layer) + " - convbnDx" + to_string(n));
     }
 
     return {finalSum032, finalSum3264};
@@ -989,9 +1101,15 @@ Ctxt FHEController::downsample1024to256(const Ctxt &c1, const Ctxt &c2) {
     c1->SetSlots(32768);
     c2->SetSlots(32768);
     num_slots = 16384*2;
+
+    /*
+     * We put the first 16384 and the second 16384 values in a single ciphertext, so that we simplify computations
+     */
     Ctxt fullpack = add(mult(c1, mask_first_n(16384, c1->GetLevel())), mult(c2, mask_second_n(16384, c2->GetLevel())));
 
-    //Affianco tutte le righe
+    /*
+     * We first juxtapose the values in the rows
+     */
     fullpack = context->EvalMult(context->EvalAdd(fullpack, context->EvalRotate(fullpack, 1)), gen_mask(2, fullpack->GetLevel()));
     fullpack = context->EvalMult(context->EvalAdd(fullpack, context->EvalRotate(context->EvalRotate(fullpack, 1), 1)), gen_mask(4, fullpack->GetLevel()));
     fullpack = context->EvalMult(context->EvalAdd(fullpack, context->EvalRotate(fullpack, 4)), gen_mask(8, fullpack->GetLevel()));
@@ -1000,6 +1118,9 @@ Ctxt FHEController::downsample1024to256(const Ctxt &c1, const Ctxt &c2) {
     Ctxt downsampledrows = encrypt({0});
 
 
+    /*
+     * Then, the rows themselves (this method is a little bit slower, but requires one Automorphism Key)
+     */
     for (int i = 0; i < 16; i++) {
         Ctxt masked = context->EvalMult(fullpack, mask_first_n_mod(16, 1024, i, fullpack->GetLevel()));
         downsampledrows = context->EvalAdd(downsampledrows, masked);
@@ -1008,6 +1129,9 @@ Ctxt FHEController::downsample1024to256(const Ctxt &c1, const Ctxt &c2) {
         }
     }
 
+    /*
+     * Lastly, the channels
+     */
     Ctxt downsampledchannels = encrypt({0});
     for (int i = 0; i < 32; i++) {
         Ctxt masked = context->EvalMult(downsampledrows, mask_channel(i, downsampledrows->GetLevel()));
@@ -1165,7 +1289,7 @@ Ctxt FHEController::convbn1632sxV2(const Ctxt &in, int layer, int n, double scal
     finalSum = context->EvalAdd(finalSum, bias1);
 
     if (timing) {
-        print_duration(start, "Layer" + to_string(layer) + " - convbn" + to_string(n));
+        print_duration(start, "Block " + to_string(layer) + " - convbn" + to_string(n));
     }
 
     return finalSum;
@@ -1213,7 +1337,7 @@ Ctxt FHEController::convbn1632dxV2(const Ctxt &in, int layer, int n, double scal
     finalSum = context->EvalAdd(finalSum, bias);
 
     if (timing) {
-        print_duration(start, "Layer" + to_string(layer) + " - convbn" + to_string(n));
+        print_duration(start, "Block " + to_string(layer) + " - convbn" + to_string(n));
     }
 
     return finalSum;
