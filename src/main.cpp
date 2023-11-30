@@ -59,40 +59,7 @@ int main(int argc, char *argv[]) {
      *
      * REMOVE THESE LINES IN RELEASE
      */
-
-    generate_context = 0;
-    controller.parameters_folder = "keys_exp1";
-    verbose = 2;
-
-    if (generate_context == -1) {
-        cerr << "You either have to use the argument \"generate_keys\" or \"load_keys\"!\nIf it is your first time, you could try"
-                "with \"./LowMemoryFHEResNet20 generate_keys \"keys_exp1\"\nCheck the README.md.\nAborting. :-(" << endl;
-        exit(1);
-    }
-
-    /*
-     * LINES ADDED FOR DEBUG
-     *******************************
-     *
-
-    generate_context = 1;
-    string folder = "keys_exp1";
-    controller.parameters_folder = folder;
-    struct stat sb;
-    if (stat(("../" + folder).c_str(), &sb) == 0) {
-        cerr << "The keys folder \"" << folder << "\" already exists, I will abort.";
-        exit(1);
-    }
-    else {
-        filesystem::create_directory("../" + folder);
-    }
-     *
-     * *****************************
-     *
-     * REMOVE THESE LINES IN RELEASE
-     */
-
-    generate_context = 0;
+    generate_context = 3;
     controller.parameters_folder = "keys_exp3";
     verbose = 2;
 
@@ -115,6 +82,7 @@ int main(int argc, char *argv[]) {
                 controller.generate_context(16, 50, 46, 3, 5, 4, 119, true);
                 break;
             case 4:
+                controller.generate_context(16, 48, 44, 2, 4, 4, 59, true);
                 break;
             default:
                 controller.generate_context(true);
