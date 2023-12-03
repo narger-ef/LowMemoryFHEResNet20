@@ -69,9 +69,8 @@ jobs:
     - name: Build
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} 
       
-    - name: TestRun
-      run: >
+    - name: Run
+      run: > 
            cd build &&
+           sudo ldconfig &&
            ./LowMemoryFHEResNet20 test
-
-  
