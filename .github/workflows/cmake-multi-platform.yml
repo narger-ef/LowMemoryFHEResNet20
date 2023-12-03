@@ -70,8 +70,8 @@ jobs:
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} 
       
     - name: TestRun
-      run: > 
+      run: >
            cd build &&
-           ./LowMemoryFHEResNet20
+           ./LowMemoryFHEResNet20 test
 
   

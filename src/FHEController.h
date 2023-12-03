@@ -39,6 +39,8 @@ public:
     void generate_context(bool serialize = false);
     void generate_context(int log_ring, int log_scale, int log_primes, int digits_hks, int cts_levels, int stc_levels, int relu_deg, bool serialize = false);
     void load_context(bool verbose = true);
+    void test_context();
+
     /*
      * Generating bootstrapping and rotation keys stuff
      */
@@ -48,6 +50,7 @@ public:
                                                   int bootstrap_slots,
                                                   bool serialize,
                                                   const string& filename);
+
 
     void load_bootstrapping_and_rotation_keys(const string& filename, int bootstrap_slots, bool verbose);
     void load_rotation_keys(const string& filename, bool verbose);

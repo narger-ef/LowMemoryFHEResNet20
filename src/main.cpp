@@ -27,6 +27,7 @@ FHEController controller;
 int generate_context;
 string input_filename;
 int verbose;
+bool test;
 
 /*
  * TODO:
@@ -62,6 +63,11 @@ int main(int argc, char *argv[]) {
     //generate_context = 0;
     //controller.parameters_folder = "keys_exp3";
     //verbose = 2;
+
+    if (test) {
+        controller.test_context();
+        exit(0);
+    }
 
     if (generate_context == -1) {
         cerr << "You either have to use the argument \"generate_keys\" or \"load_keys\"!\nIf it is your first time, you could try"
@@ -507,6 +513,10 @@ void check_arguments(int argc, char *argv[]) {
                 if (verbose > 1) cout << "Context folder set to: \"" << controller.parameters_folder << "\"." << endl;
                 generate_context = 0;
             }
+        }
+
+        if (string(argv[i]) == "test") {
+            test = true;
         }
 
         if (string(argv[i]) == "generate_keys") {
