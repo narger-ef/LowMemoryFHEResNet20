@@ -310,7 +310,7 @@ void FHEController::load_bootstrapping_and_rotation_keys(const string& filename,
 
     if (verbose) print_duration(start, "Loading bootstrapping pre-computations + rotations");
 
-    cout << endl;
+    if (verbose) cout << endl;
 }
 
 void FHEController::load_rotation_keys(const string& filename, bool verbose) {
@@ -438,13 +438,9 @@ Ctxt FHEController::bootstrap(const Ctxt &c, bool timing) {
     }
 
 
-    cout <<"Lv. bootstr: " << c->GetLevel() << endl;
-
     auto start = start_time();
 
     Ctxt res = context->EvalBootstrap(c);
-
-    cout <<"Lv. aft bootstr: " << res->GetLevel() << endl;
 
     if (timing) {
         print_duration(start, "Bootstrapping " + to_string(c->GetSlots()) + " slots");
@@ -480,7 +476,7 @@ Ctxt FHEController::relu(const Ctxt &c, double scale, bool timing) {
     context->Decrypt(key_pair.secretKey, c, &result);
     vector<double> v = result->GetRealPackedValue();
 
-    cout << "min: " << *min_element(v.begin(), v.end()) << ", max: " << *max_element(v.begin(), v.end()) << endl;
+    //cout << "min: " << *min_element(v.begin(), v.end()) << ", max: " << *max_element(v.begin(), v.end()) << endl;
     /*
      * Max min
      */

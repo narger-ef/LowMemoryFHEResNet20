@@ -59,9 +59,9 @@ int main(int argc, char *argv[]) {
      *
      * REMOVE THESE LINES IN RELEASE
      */
-    generate_context = 0;
-    controller.parameters_folder = "keys_exp3";
-    verbose = 2;
+    //generate_context = 0;
+    //controller.parameters_folder = "keys_exp3";
+    //verbose = 2;
 
     if (generate_context == -1) {
         cerr << "You either have to use the argument \"generate_keys\" or \"load_keys\"!\nIf it is your first time, you could try"
@@ -135,6 +135,9 @@ int main(int argc, char *argv[]) {
         controller.clear_context(0);
         controller.load_context(false);
 
+        cout << "Context created correctly." << endl;
+        exit(0);
+
     } else {
         controller.load_context(verbose > 1);
     }
@@ -164,8 +167,6 @@ void executeResNet20() {
 
     vector<double> input_image = read_image(input_filename.c_str());
 
-    cout << "Lo cifro al " << controller.circuit_depth - 4 - get_relu_depth(controller.relu_degree) << " su " << controller.circuit_depth << endl;
-
     Ctxt in = controller.encrypt(input_image, controller.circuit_depth - 4 - get_relu_depth(controller.relu_degree));
 
     controller.load_bootstrapping_and_rotation_keys("rotations-layer1.bin", 16384, verbose > 1);
@@ -178,8 +179,6 @@ void executeResNet20() {
 
     firstLayer = initial_layer(in);
     if (print_intermediate_values) controller.print(firstLayer, 16384, "Initial layer: ");
-
-    cout << "Initial layer esce al " << firstLayer->GetLevel() << endl;
   
     /*
      * Layer 1: 16 channels of 32x32
@@ -256,6 +255,7 @@ Ctxt final_layer(const Ctxt& in) {
 
     if (verbose >= 0) {
         cout << "The input image is classified as " << YELLOW_TEXT << utils::get_class(index_max) << RESET_COLOR << "" << endl;
+        cout << "The index of max element is " << YELLOW_TEXT << index_max << RESET_COLOR << "" << endl;
     }
 
 
@@ -513,16 +513,16 @@ void check_arguments(int argc, char *argv[]) {
             if (i + 1 < argc) {
                 string folder = "";
                 if (string(argv[i+1]) == "keys_exp1") {
-                    folder = "../keys_exp1";
+                    folder = "keys_exp1";
                     generate_context = 1;
                 } else if (string(argv[i+1]) == "keys_exp2") {
-                    folder = "../keys_exp2";
+                    folder = "keys_exp2";
                     generate_context = 2;
                 } else if (string(argv[i+1]) == "keys_exp3") {
-                    folder = "../keys_exp3";
+                    folder = "keys_exp3";
                     generate_context = 3;
                 } else if (string(argv[i+1]) == "keys_exp4") {
-                    folder = "../keys_exp4";
+                    folder = "keys_exp4";
                     generate_context = 4;
                 } else {
                     cerr << "Set a proper value for 'generate_keys'. For instance, use 'keys_exp1'. Check the README.md" << endl;
