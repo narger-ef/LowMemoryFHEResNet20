@@ -247,6 +247,52 @@ void FHEController::load_context(bool verbose) {
     num_slots = 1 << 14;
 }
 
+void FHEController::test_context() {
+    //Testing parameters for Experiment 1
+
+    CCParams<CryptoContextCKKSRNS> parameters;
+
+    num_slots = 1 << 14;
+
+    parameters.SetSecretKeyDist(SPARSE_TERNARY);
+    parameters.SetSecurityLevel(lbcrypto::HEStd_128_classic);
+    parameters.SetNumLargeDigits(2);
+    parameters.SetRingDim(1 << 16);
+    parameters.SetBatchSize(num_slots);
+
+    level_budget = {3, 3};
+
+    ScalingTechnique rescaleTech = FLEXIBLEAUTO;
+    int dcrtBits               = 47;
+    int firstMod               = 52;
+
+    parameters.SetScalingModSize(dcrtBits);
+    parameters.SetScalingTechnique(rescaleTech);
+    parameters.SetFirstModSize(firstMod);
+
+    uint32_t approxBootstrapDepth = 8;
+
+    uint32_t levelsUsedBeforeBootstrap = get_relu_depth(59) + 3;
+
+    circuit_depth = levelsUsedBeforeBootstrap + FHECKKSRNS::GetBootstrapDepth(approxBootstrapDepth, level_budget, SPARSE_TERNARY);
+
+    parameters.SetMultiplicativeDepth(circuit_depth);
+
+    context = GenCryptoContext(parameters);
+
+    context->Enable(PKE);
+    context->Enable(KEYSWITCH);
+    context->Enable(LEVELEDSHE);
+    context->Enable(ADVANCEDSHE);
+    context->Enable(FHE);
+
+    key_pair = context->KeyGen();
+
+    context->EvalMultKeyGen(key_pair.secretKey);
+
+    cout << "Test completed." << endl;
+}
+
 void FHEController::generate_bootstrapping_keys(int bootstrap_slots) {
     context->EvalBootstrapSetup(level_budget, {0, 0}, bootstrap_slots);
     context->EvalBootstrapKeyGen(key_pair.secretKey, bootstrap_slots);
@@ -310,7 +356,7 @@ void FHEController::load_bootstrapping_and_rotation_keys(const string& filename,
 
     if (verbose) print_duration(start, "Loading bootstrapping pre-computations + rotations");
 
-    cout << endl;
+    if (verbose) cout << endl;
 }
 
 void FHEController::load_rotation_keys(const string& filename, bool verbose) {
@@ -438,13 +484,9 @@ Ctxt FHEController::bootstrap(const Ctxt &c, bool timing) {
     }
 
 
-    cout <<"Lv. bootstr: " << c->GetLevel() << endl;
-
     auto start = start_time();
 
     Ctxt res = context->EvalBootstrap(c);
-
-    cout <<"Lv. aft bootstr: " << res->GetLevel() << endl;
 
     if (timing) {
         print_duration(start, "Bootstrapping " + to_string(c->GetSlots()) + " slots");

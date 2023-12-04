@@ -4,12 +4,12 @@ name: CMake on multiple platforms
 
 on:
   push:
-    branches: [ "build" ]
+    branches: [ "build", ]
   pull_request:
     branches: [ "build" ]
 
 jobs:
-  build:
+  build-and-run:
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -63,9 +63,14 @@ jobs:
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-        -S ${{ github.workspace }}
+        -S ${{ github.workspace }} 
+        
 
     - name: Build
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} 
-
-  
+      
+    - name: Run
+      run: > 
+           cd build &&
+           sudo ldconfig &&
+           ./LowMemoryFHEResNet20 test
