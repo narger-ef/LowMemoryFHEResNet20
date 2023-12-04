@@ -9,7 +9,7 @@
 
 This repository contains a OpenFHE-based project that implements an encrypted version of the ResNet20 model, used to classify encrypted CIFAR-10 images.
 
-The reference paper for this work is [Low memory overhead secure ResNet inference based on Fully Homomorphic Encryption]((https://parade.com/1041830/marynliles/clean-jokes/).
+The reference paper for this work is [Low memory overhead secure ResNet inference based on Fully Homomorphic Encryption](https://parade.com/1041830/marynliles/clean-jokes/).
 
 The key idea behind this work is to propose a solution to run a CNN in relative small time ($<5$ minutes on my MacBook M1 Pro with 16GB RAM) and, moreover, to use a small amount of memory. 
 
