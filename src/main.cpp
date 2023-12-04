@@ -239,7 +239,7 @@ Ctxt final_layer(const Ctxt& in) {
         cout << "The input image is classified as " << YELLOW_TEXT << utils::get_class(index_max) << RESET_COLOR << "" << endl;
         cout << "The index of max element is " << YELLOW_TEXT << index_max << RESET_COLOR << "" << endl;
         if (plain) {
-            string command = "python3 ../src/plain.py \"" + input_filename + "\"";
+            string command = "python3 ../src/plain/script.py \"" + input_filename + "\"";
             system(command.c_str());
         }
     }
