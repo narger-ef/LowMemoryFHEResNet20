@@ -240,7 +240,10 @@ Ctxt final_layer(const Ctxt& in) {
         cout << "The index of max element is " << YELLOW_TEXT << index_max << RESET_COLOR << "" << endl;
         if (plain) {
             string command = "python3 ../src/plain/script.py \"" + input_filename + "\"";
-            (void) system(command.c_str());
+            int return_sys = system(command.c_str());
+            if (return_sys == 1) {
+                cout << "There was an error launching src/plain/script.py. Run it from Python in order to debug it." << endl;
+            }
         }
     }
 
