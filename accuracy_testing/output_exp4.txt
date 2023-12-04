@@ -1,0 +1,320 @@
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/0_0_3.png[0m.
+Decrypting the output...
+Output: [  3.549, -2.201,  1.228,  3.557, -3.854,  0.086, -0.680, -2.570,  1.989, -1.125 ]
+The input image is classified as [1;33mCat[0m
+The index of max element is [1;33m3[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/1_0_0.png[0m.
+Decrypting the output...
+Output: [  5.134, -3.078,  1.956,  5.260, -1.175, -1.393, -0.355, -2.241, -1.400, -2.742 ]
+The input image is classified as [1;33mCat[0m
+The index of max element is [1;33m3[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/2_0_5.png[0m.
+Decrypting the output...
+Output: [  3.361, -2.769, -0.407,  3.646, -3.948,  3.570,  0.269, -1.664, -0.762, -1.335 ]
+The input image is classified as [1;33mCat[0m
+The index of max element is [1;33m3[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/3_0_0.png[0m.
+Decrypting the output...
+Output: [  3.522, -2.668, -2.075,  2.139, -0.522,  0.248, -1.579, -1.696,  3.894, -1.335 ]
+The input image is classified as [1;33mShip[0m
+The index of max element is [1;33m8[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/4_0_5.png[0m.
+Decrypting the output...
+Output: [  1.842, -3.461, -1.848,  4.812, -0.715,  5.489, -0.512, -1.712, -0.943, -2.920 ]
+The input image is classified as [1;33mDog[0m
+The index of max element is [1;33m5[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/5_0_8.png[0m.
+Decrypting the output...
+Output: [  3.415, -1.590,  0.358,  1.768, -2.787,  1.417, -0.196, -2.925,  3.548, -2.980 ]
+The input image is classified as [1;33mShip[0m
+The index of max element is [1;33m8[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/6_0_0.png[0m.
+Decrypting the output...
+Output: [  3.890, -2.389, -1.567, -1.009,  1.152,  0.598, -0.402, -1.485,  4.067, -2.816 ]
+The input image is classified as [1;33mShip[0m
+The index of max element is [1;33m8[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/7_1_3.png[0m.
+Decrypting the output...
+Output: [  1.833, -2.726, -2.837,  2.640, -0.930,  3.237,  2.251, -2.836,  2.434, -3.036 ]
+The input image is classified as [1;33mDog[0m
+The index of max element is [1;33m5[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/8_1_0.png[0m.
+Decrypting the output...
+Output: [  1.780,  1.742, -0.633,  1.926, -1.893, -1.155, -0.824, -0.961,  0.137, -0.091 ]
+The input image is classified as [1;33mCat[0m
+The index of max element is [1;33m3[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/9_1_3.png[0m.
+Decrypting the output...
+Output: [ -0.275,  1.333, -3.852,  2.607, -1.818, -0.194,  2.475, -0.020, -1.674,  1.425 ]
+The input image is classified as [1;33mCat[0m
+The index of max element is [1;33m3[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/10_1_5.png[0m.
+Decrypting the output...
+Output: [ -0.433, -1.980, -1.722,  2.749,  2.699,  4.449, -0.961, -1.580, -0.345, -2.930 ]
+The input image is classified as [1;33mDog[0m
+The index of max element is [1;33m5[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/11_1_3.png[0m.
+Decrypting the output...
+Output: [  2.292, -2.513, -2.895,  4.055, -2.760,  4.142,  0.453, -1.725,  0.773, -1.818 ]
+The input image is classified as [1;33mDog[0m
+The index of max element is [1;33m5[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/12_1_6.png[0m.
+Decrypting the output...
+Output: [  1.611, -2.282, -0.753,  1.773, -0.178,  1.516,  1.991, -2.255,  1.091, -2.544 ]
+The input image is classified as [1;33mFrog[0m
+The index of max element is [1;33m6[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/13_1_8.png[0m.
+Decrypting the output...
+Output: [ -0.008, -2.192,  0.721,  5.456, -3.472, -2.263,  1.034, -2.327,  5.187, -2.146 ]
+The input image is classified as [1;33mCat[0m
+The index of max element is [1;33m3[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/14_1_4.png[0m.
+Decrypting the output...
+Output: [ -1.749, -1.498, -2.517,  0.921,  2.839, -0.423, -1.536,  2.299,  3.633, -1.978 ]
+The input image is classified as [1;33mShip[0m
+The index of max element is [1;33m8[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/15_1_5.png[0m.
+Decrypting the output...
+Output: [ -0.713, -1.436, -4.889,  3.251, -2.704,  4.024,  0.296, -1.788,  4.038, -0.058 ]
+The input image is classified as [1;33mShip[0m
+The index of max element is [1;33m8[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/16_2_2.png[0m.
+Decrypting the output...
+Output: [ -3.205, -2.875,  2.818,  2.768,  2.054,  0.305, -0.586,  0.835, -0.838, -1.277 ]
+The input image is classified as [1;33mBird[0m
+The index of max element is [1;33m2[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/17_2_5.png[0m.
+Decrypting the output...
+Output: [  1.003, -3.689, -3.984,  8.224, -4.771,  8.709, -0.890, -2.116, -0.546, -2.001 ]
+The input image is classified as [1;33mDog[0m
+The index of max element is [1;33m5[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/18_2_3.png[0m.
+Decrypting the output...
+Output: [  1.296, -3.966,  5.855,  5.386, -2.647,  2.859,  0.015, -3.205, -3.457, -2.175 ]
+The input image is classified as [1;33mBird[0m
+The index of max element is [1;33m2[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/19_2_5.png[0m.
+Decrypting the output...
+Output: [ -1.652, -2.538, -2.946,  3.375, -0.081,  4.799, -0.044, -1.546,  3.701, -3.079 ]
+The input image is classified as [1;33mDog[0m
+The index of max element is [1;33m5[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/20_2_8.png[0m.
+Decrypting the output...
+Output: [  2.188, -1.989, -1.140, -1.105, -0.436,  3.268, -1.421, -0.947,  3.838, -2.223 ]
+The input image is classified as [1;33mShip[0m
+The index of max element is [1;33m8[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/21_2_0.png[0m.
+Decrypting the output...
+Output: [  2.335, -1.765, -1.574,  2.156, -2.537,  2.846,  1.089, -2.290,  2.204, -2.442 ]
+The input image is classified as [1;33mDog[0m
+The index of max element is [1;33m5[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/22_2_0.png[0m.
+Decrypting the output...
+Output: [  5.682, -3.726,  0.165,  0.805, -3.525,  5.483, -1.819, -0.658, -1.250, -1.175 ]
+The input image is classified as [1;33mAirplane[0m
+The index of max element is [1;33m0[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/23_3_3.png[0m.
+Decrypting the output...
+Output: [ -1.194, -1.637,  0.050,  4.005, -3.741,  2.309,  0.292, -1.226,  2.986, -1.843 ]
+The input image is classified as [1;33mCat[0m
+The index of max element is [1;33m3[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/24_3_5.png[0m.
+Decrypting the output...
+Output: [ -1.575, -4.297, -4.003,  8.089, -0.713,  8.806, -2.129,  0.272, -2.076, -2.376 ]
+The input image is classified as [1;33mDog[0m
+The index of max element is [1;33m5[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/25_3_3.png[0m.
+Decrypting the output...
+Output: [  1.754, -3.169, -2.548,  5.877, -2.305,  6.281, -1.491,  0.602, -2.652, -2.345 ]
+The input image is classified as [1;33mDog[0m
+The index of max element is [1;33m5[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/26_3_3.png[0m.
+Decrypting the output...
+Output: [  0.022, -3.620, -2.348,  6.099, -3.949,  7.273, -0.682,  0.178, -1.181, -1.828 ]
+The input image is classified as [1;33mDog[0m
+The index of max element is [1;33m5[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/27_4_4.png[0m.
+Decrypting the output...
+Output: [ -1.724, -3.343, -2.336,  5.288,  5.685,  3.656, -0.889, -0.733, -2.328, -3.288 ]
+The input image is classified as [1;33mDeer[0m
+The index of max element is [1;33m4[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/28_4_5.png[0m.
+Decrypting the output...
+Output: [  2.300, -2.815, -3.069,  3.304,  0.995,  3.972, -1.193, -2.606,  1.535, -2.458 ]
+The input image is classified as [1;33mDog[0m
+The index of max element is [1;33m5[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/29_4_3.png[0m.
+Decrypting the output...
+Output: [ -2.335, -2.651, -1.744,  3.521,  3.436,  0.864,  2.516, -0.901,  0.068, -2.821 ]
+The input image is classified as [1;33mCat[0m
+The index of max element is [1;33m3[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/30_5_5.png[0m.
+Decrypting the output...
+Output: [ -0.810, -3.258, -4.355,  3.446, -1.521,  5.717,  3.969, -2.310,  1.547, -2.425 ]
+The input image is classified as [1;33mDog[0m
+The index of max element is [1;33m5[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/31_5_3.png[0m.
+Decrypting the output...
+Output: [ -2.201, -4.206,  3.639,  4.605, -3.111,  4.620,  3.570,  0.083, -3.908, -3.091 ]
+The input image is classified as [1;33mDog[0m
+The index of max element is [1;33m5[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/32_5_5.png[0m.
+Decrypting the output...
+Output: [ -1.396, -3.362, -3.353,  9.061, -2.383,  9.151, -1.154, -1.264, -2.942, -2.374 ]
+The input image is classified as [1;33mDog[0m
+The index of max element is [1;33m5[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/33_5_5.png[0m.
+Decrypting the output...
+Output: [  2.751, -2.332, -2.968,  4.997, -2.967,  5.712, -1.574, -1.694, -1.328, -0.620 ]
+The input image is classified as [1;33mDog[0m
+The index of max element is [1;33m5[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/34_6_3.png[0m.
+Decrypting the output...
+Output: [  1.735, -1.678,  0.964,  3.583, -3.894, -0.929,  3.151, -1.707, -1.311,  0.064 ]
+The input image is classified as [1;33mCat[0m
+The index of max element is [1;33m3[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/35_6_3.png[0m.
+Decrypting the output...
+Output: [  1.511, -2.928, -1.770,  5.752, -4.191,  5.759,  1.546, -1.604, -1.001, -3.062 ]
+The input image is classified as [1;33mDog[0m
+The index of max element is [1;33m5[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/36_6_5.png[0m.
+Decrypting the output...
+Output: [  1.495, -2.343, -3.456,  4.242, -3.651,  6.151,  0.651, -1.037,  0.264, -2.306 ]
+The input image is classified as [1;33mDog[0m
+The index of max element is [1;33m5[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/37_6_5.png[0m.
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/37_6_5.png[0m.
+Decrypting the output...
+Output: [ -0.282, -2.116, -3.230,  5.038, -1.740,  5.334, -0.912,  0.918, -0.394, -2.613 ]
+The input image is classified as [1;33mDog[0m
+The index of max element is [1;33m5[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/38_7_5.png[0m.
+Decrypting the output...
+Output: [ -0.826, -2.620, -1.146, -0.848,  1.076,  3.384, -1.246,  3.556,  0.331, -1.646 ]
+The input image is classified as [1;33mHorse[0m
+The index of max element is [1;33m7[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/39_7_0.png[0m.
+Decrypting the output...
+Output: [  3.092, -3.510,  0.379, -2.333, -1.367,  2.946, -1.443,  1.925,  1.884, -1.543 ]
+The input image is classified as [1;33mAirplane[0m
+The index of max element is [1;33m0[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/40_7_5.png[0m.
+Decrypting the output...
+Output: [ -0.170, -3.128, -0.095,  0.630, -3.930,  3.268, -0.027,  4.229, -0.847,  0.068 ]
+The input image is classified as [1;33mHorse[0m
+The index of max element is [1;33m7[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/41_7_3.png[0m.
+Decrypting the output...
+Output: [  3.293, -2.577,  1.010,  2.443, -3.126,  1.569, -0.327,  0.628, -0.416, -2.488 ]
+The input image is classified as [1;33mAirplane[0m
+The index of max element is [1;33m0[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/42_8_5.png[0m.
+Decrypting the output...
+Output: [  0.478, -2.040, -3.756,  3.410, -2.042,  4.020, -1.173, -1.352,  2.846, -0.332 ]
+The input image is classified as [1;33mDog[0m
+The index of max element is [1;33m5[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/43_8_5.png[0m.
+Decrypting the output...
+Output: [  2.694, -2.194, -0.820,  3.318, -3.379,  2.958, -0.467, -0.929,  1.429, -2.582 ]
+The input image is classified as [1;33mCat[0m
+The index of max element is [1;33m3[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/44_8_5.png[0m.
+Decrypting the output...
+Output: [  2.775, -2.036, -4.274,  3.998, -3.600,  3.500,  0.070, -1.485,  2.818, -1.754 ]
+The input image is classified as [1;33mCat[0m
+The index of max element is [1;33m3[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/45_9_5.png[0m.
+Decrypting the output...
+Output: [  1.087, -2.150, -3.024,  1.251, -4.344,  2.705,  2.047, -1.386,  1.212,  2.622 ]
+The input image is classified as [1;33mDog[0m
+The index of max element is [1;33m5[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/46_9_3.png[0m.
+Decrypting the output...
+Output: [ -1.967, -2.723, -2.340,  3.672, -2.014,  4.294,  3.042, -1.618,  2.105, -2.472 ]
+The input image is classified as [1;33mDog[0m
+The index of max element is [1;33m5[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/47_9_3.png[0m.
+Decrypting the output...
+Output: [  0.619, -2.854, -3.549,  3.033, -2.690,  3.736,  1.299, -1.339,  1.368,  0.362 ]
+The input image is classified as [1;33mDog[0m
+The index of max element is [1;33m5[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/48_9_5.png[0m.
+Decrypting the output...
+Output: [  0.690, -2.826, -2.341,  1.769, -2.672,  3.751, -1.515, -1.606,  3.236,  1.492 ]
+The input image is classified as [1;33mDog[0m
+The index of max element is [1;33m5[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/49_9_8.png[0m.
+Decrypting the output...
+Output: [  2.043, -2.732, -2.532,  0.967, -1.097,  2.245, -1.583, -0.434,  1.741,  1.311 ]
+The input image is classified as [1;33mDog[0m
+The index of max element is [1;33m5[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/50_9_3.png[0m.
+Decrypting the output...
+Output: [  3.069, -2.118, -2.276,  3.232, -4.238,  0.015,  0.119, -2.447,  1.208,  3.423 ]
+The input image is classified as [1;33mTruck[0m
+The index of max element is [1;33m9[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/51_9_4.png[0m.
+Decrypting the output...
+Output: [  1.157, -2.511, -1.817, -1.871,  4.240, -0.825, -0.986, -0.966,  4.251, -0.674 ]
+The input image is classified as [1;33mShip[0m
+The index of max element is [1;33m8[0m
+Encrypted ResNet20 classification started.
+I am going to encrypt and classify [1;32m../inputs/problematic/52_9_5.png[0m.
+Decrypting the output...
+Output: [  1.608, -2.959, -2.578,  6.245, -4.422,  5.181, -0.737, -0.535, -1.751, -0.044 ]
+The input image is classified as [1;33mCat[0m
+The index of max element is [1;33m3[0m
