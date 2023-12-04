@@ -4,12 +4,12 @@ name: CMake on multiple platforms
 
 on:
   push:
-    branches: [ "build" ]
+    branches: [ "build", ]
   pull_request:
     branches: [ "build" ]
 
 jobs:
-  build:
+  build-and-run:
     runs-on: ${{ matrix.os }}
 
     strategy:
