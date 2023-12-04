@@ -1,4 +1,4 @@
-# Privacy-Preserving ResNet20 based on FHE with Low Memory Overhead
+# Encrypted Image Classification with Low Memory Footprint using Fully Homomorphic Encryption
 <center>
 <img src="imgs/console.png" alt="Console presentation image" width=85% >
 </center>
@@ -9,11 +9,13 @@
 
 This repository contains a OpenFHE-based project that implements an encrypted version of the ResNet20 model, used to classify encrypted CIFAR-10 images.
 
-The reference paper for this work is [Low memory overhead secure ResNet inference based on Fully Homomorphic Encryption](google.it).
+The reference paper for this work is [Low memory overhead secure ResNet inference based on Fully Homomorphic Encryption]((https://parade.com/1041830/marynliles/clean-jokes/).
 
-The key idea behind this work is to propose a solution to run a CNN in relative small time ($<5$ minutes on my MacBook M1 Pro with 16GB RAM) and, moreover, to use a small amount of memory.
+The key idea behind this work is to propose a solution to run a CNN in relative small time ($<5$ minutes on my MacBook M1 Pro with 16GB RAM) and, moreover, to use a small amount of memory. 
 
-Existing works use a lot of memory ([3]: $\approx$ 100GB, [4]: $\approx$ 500GB), while this implementation uses at most 16GB, making it usable by normal users.
+De Castro et al. [6] showed that memory is currently the main bottleneck to be addressed in FHE circuits, although most of the works do not consider it as a metric when building FHE solutions.
+
+Existing works use a lot of memory ([4]: $\approx$ 100GB, [5]: $\approx$ 500GB), while this implementation uses less than 16GB, making it usable by normal users.
 
 ## Technical details
 
@@ -92,31 +94,47 @@ and run it with the following command:
 
 ### 3) Custom arguments
 
-- `generate_keys`, a value in `[params_exp1, params_exp2, params_exp3, params_exp4]`
-- `load_keys`, type: `string`
-- `input`, type: `string`, the filename of a custom image. *MUST* be a three channel RGB 32x32 image either in `.jpg` or in `.png` format
+- `generate_keys`, type `int`, a value in `[1, 2, 3, 4]`
+- `load_keys`, type: `int` a value in `[1, 2, 3, 4]`
+- `input`, type: `string`, the filename of a custom image. **MUST** be a three channel RGB 32x32 image either in `.jpg` or in `.png` format
 - `verbose` a value in `[-1, 0, 1, 2]`, the first shows no information, the last shows a lot of messages
+- `plain`: added when the user wants the plain result too. Note: enabling this option means that a Python script will be executed after the encrypted inference. This script requires the following modules: `torch`, `torchvision`, `PIL`, `numpy`.
 
+#### Some examples 
 
 The first execution should be launched with the `generate_keys` argument, using the preferred set of parameters. Check the paper to see the differences between them. For instance, we choose the set of parameters defined in the first experiment:
 ```
-./LowMemoryFHEResNet20 generate_keys "params_exp1"
+./LowMemoryFHEResNet20 generate_keys 1
 ```
-This command create the required keys and stores them in a new folder called `params_exp1`, in the root folder of the project.
+This command create the required keys and stores them in a new folder called `keys_exp1`, in the root folder of the project.
 
-The default command creates a new context and classifies the default image in `inputs/louis.jpg`. We can, however, use custom arguments.
-We can use a set of serialized context and keys with the argument `context` as follows:
-
-```
-./LowMemoryFHEResNet20 context "parameters_first_experiment"
-```
-This command loads context and keys from the folder `parameters_first_experiment`, located in the root folder of the project.
-Lastly, in order to load a custom image, we use the argument `input` as follows:
+The default command creates a new context and classifies the default image in `inputs/luis.png`. We can, however, use custom arguments.
+We can use a set of serialized context and keys with the argument `load_keys` as follows:
 
 ```
-./LowMemoryFHEResNet20 context "parameters_first_experiment" input "inputs/louis.jpg"
+./LowMemoryFHEResNet20 load_keys 1
+```
+This command loads context and keys from the folder `keys_exp1`, located in the root folder of the project, and runs an inference on the default image.
+Then, in order to load a custom image, we use the argument `input` as follows:
+
+```
+./LowMemoryFHEResNet20 load_keys 1 input "inputs/vale.jpg"
 ```
 Even for this argument, the starting position will be the root of the project.
+We can also compare the result with the plain version of the model, using the `plain` keyword:
+
+```
+./LowMemoryFHEResNet20 load_keys 1 input "inputs/vale.jpg" plain
+```
+
+This command will launch a Python script at the end of the encrypted comptations, giving the plain output (which will differ from the encrypted one according to the parameters, check the paper for the precision values of each set of parameters).
+Notice that `plain` requires a few things in order to be used:
+
+- `python3`
+- `torch`
+- `torchvision`
+- `PIL`
+- `numpy`
 
 ## Interpreting the output
 The output of the encrypted model is a vector consisting of 10 elements. In order to interpret it, it is enough to find the index of the maximum element. A sample output could be:
@@ -157,6 +175,10 @@ In this case, the index of max is 3, which is nice, since the input image was Lu
 
 So it was correct!
 
+## Comparing to the plain model
+
+In the `notebook` folder, it is possible to find different useful notebooks that can be used in order to compute the precision of a computation, with respect to the plain model, in details for each layer. 
+
 ## Declaration
 
 This is a proof of concept and, even though parameters are created wtih $\lambda = 128$ security bits (according to [Homomorphic Encryption Standards](https://homomorphicencryption.org/standard)), this circuit should not be used in production.
@@ -183,3 +205,5 @@ Approximate Homomorphic Encryption with Reduced Approximation Error*. In: Galbra
 [4] Kim, D., & Guyot, C. (2023). *Optimized Privacy-Preserving CNN Inference With Fully Homomorphic Encryption*. In IEEE Transactions on Information Forensics and Security, vol. 18, pp. 2175-2187.
 
 [5] Lee, E., Lee, J. W., Lee, J., Kim, Y. S., Kim, Y., No, J. S., & Choi, W. (2022, June). *Low-complexity deep convolutional neural networks on fully homomorphic encryption using multiplexed parallel convolutions*. In International Conference on Machine Learning (pp. 12403-12422). PMLR.
+
+[6] De Castro, L., Agrawal, R., Yazicigil, R., Chandrakasan, A., Vaikuntanathan, V., Juvekar, C., & Joshi, A. (2021). Does Fully Homomorphic Encryption Need Compute Acceleration?
