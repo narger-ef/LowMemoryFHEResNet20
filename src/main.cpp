@@ -28,6 +28,7 @@ int generate_context;
 string input_filename;
 int verbose;
 bool test;
+bool plain;
 
 /*
  * TODO:
@@ -39,31 +40,6 @@ int main(int argc, char *argv[]) {
 
     check_arguments(argc, argv);
 
-    /*
-     * LINES ADDED FOR DEBUG
-     *******************************
-     *
-
-    generate_context = 1;
-    string folder = "keys_exp1";
-    controller.parameters_folder = folder;
-    struct stat sb;
-    if (stat(("../" + folder).c_str(), &sb) == 0) {
-        cerr << "The keys folder \"" << folder << "\" already exists, I will abort.";
-        exit(1);
-    }
-    else {
-        filesystem::create_directory("../" + folder);
-    }
-     *
-     * *****************************
-     *
-     * REMOVE THESE LINES IN RELEASE
-     */
-    //generate_context = 0;
-    //controller.parameters_folder = "keys_exp3";
-    //verbose = 2;
-
     if (test) {
         controller.test_context();
         exit(0);
@@ -71,7 +47,7 @@ int main(int argc, char *argv[]) {
 
     if (generate_context == -1) {
         cerr << "You either have to use the argument \"generate_keys\" or \"load_keys\"!\nIf it is your first time, you could try"
-                "with \"./LowMemoryFHEResNet20 generate_keys \"keys_exp1\"\nCheck the README.md.\nAborting. :-(" << endl;
+                "with \"./LowMemoryFHEResNet20 generate_keys \"1\"\nCheck the README.md.\nAborting. :-(" << endl;
         exit(1);
     }
 
@@ -262,6 +238,10 @@ Ctxt final_layer(const Ctxt& in) {
     if (verbose >= 0) {
         cout << "The input image is classified as " << YELLOW_TEXT << utils::get_class(index_max) << RESET_COLOR << "" << endl;
         cout << "The index of max element is " << YELLOW_TEXT << index_max << RESET_COLOR << "" << endl;
+        if (plain) {
+            string command = "python3 ../src/plain.py \"" + input_filename + "\"";
+            system(command.c_str());
+        }
     }
 
 
@@ -509,7 +489,7 @@ void check_arguments(int argc, char *argv[]) {
     for (int i = 1; i < argc; ++i) {
         if (string(argv[i]) == "load_keys") {
             if (i + 1 < argc) {
-                controller.parameters_folder = string(argv[i + 1]);
+                controller.parameters_folder = "keys_exp" + string(argv[i + 1]);
                 if (verbose > 1) cout << "Context folder set to: \"" << controller.parameters_folder << "\"." << endl;
                 generate_context = 0;
             }
@@ -522,20 +502,20 @@ void check_arguments(int argc, char *argv[]) {
         if (string(argv[i]) == "generate_keys") {
             if (i + 1 < argc) {
                 string folder = "";
-                if (string(argv[i+1]) == "keys_exp1") {
+                if (string(argv[i+1]) == "1") {
                     folder = "keys_exp1";
                     generate_context = 1;
-                } else if (string(argv[i+1]) == "keys_exp2") {
+                } else if (string(argv[i+1]) == "2") {
                     folder = "keys_exp2";
                     generate_context = 2;
-                } else if (string(argv[i+1]) == "keys_exp3") {
+                } else if (string(argv[i+1]) == "3") {
                     folder = "keys_exp3";
                     generate_context = 3;
-                } else if (string(argv[i+1]) == "keys_exp4") {
+                } else if (string(argv[i+1]) == "4") {
                     folder = "keys_exp4";
                     generate_context = 4;
                 } else {
-                    cerr << "Set a proper value for 'generate_keys'. For instance, use 'keys_exp1'. Check the README.md" << endl;
+                    cerr << "Set a proper value for 'generate_keys'. For instance, use '1'. Check the README.md" << endl;
                     exit(1);
                 }
 
@@ -557,6 +537,10 @@ void check_arguments(int argc, char *argv[]) {
                 input_filename = "../" + string(argv[i + 1]);
                 if (verbose > 1) cout << "Input image set to: \"" << input_filename << "\"." << endl;
             }
+        }
+
+        if (string(argv[i]) == "plain") {
+            plain = true;
         }
 
     }
