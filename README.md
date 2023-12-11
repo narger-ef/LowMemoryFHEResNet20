@@ -179,10 +179,6 @@ So it was correct!
 
 In the `notebook` folder, it is possible to find different useful notebooks that can be used in order to compute the precision of a computation, with respect to the plain model, in details for each layer. 
 
-## Declaration
-
-This is a proof of concept and, even though parameters are created wtih $\lambda \geq 128$ security bits (according to [Homomorphic Encryption Standards](https://homomorphicencryption.org/standard)), this circuit should not be used in production.
-
 ## Authors
 (To be removed before submitting the paper)
 
@@ -192,6 +188,12 @@ This is a proof of concept and, even though parameters are created wtih $\lambda
 Made with <3  at [Bicocca Security Lab](https://www.bislab.unimib.it), at University of Milan-Bicocca.
 
 <img src="imgs/lab_logo.png" alt="BisLab logo" width=20%>
+
+
+### Declaration
+
+This is a proof of concept and, even though parameters are created wtih $\lambda \geq 128$ security bits (according to [Homomorphic Encryption Standards](https://homomorphicencryption.org/standard)), this circuit is for educational purposes only.
+
 
 ## Bibliography
 
