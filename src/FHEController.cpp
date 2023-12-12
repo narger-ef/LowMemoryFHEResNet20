@@ -702,19 +702,26 @@ Ctxt FHEController::convbn(const Ctxt &in, int layer, int n, double scale, bool 
 
     auto digits = context->EvalFastRotationPrecompute(in);
 
-    c_rotations.push_back(
-            context->EvalRotate(context->EvalFastRotation(in, -padding, context->GetCyclotomicOrder(), digits), -img_width ));
-    c_rotations.push_back(context->EvalFastRotation(in, -img_width, context->GetCyclotomicOrder(), digits));
-    c_rotations.push_back(
-            context->EvalRotate(context->EvalFastRotation(in, padding, context->GetCyclotomicOrder(), digits), -img_width ));
-    c_rotations.push_back(context->EvalFastRotation(in, -padding, context->GetCyclotomicOrder(), digits));
-    c_rotations.push_back(in);
-    c_rotations.push_back(context->EvalFastRotation(in, padding, context->GetCyclotomicOrder(), digits));
-    c_rotations.push_back(
-            context->EvalRotate(context->EvalFastRotation(in, -padding, context->GetCyclotomicOrder(), digits), img_width));
-    c_rotations.push_back(context->EvalFastRotation(in, img_width, context->GetCyclotomicOrder(), digits));
-    c_rotations.push_back(
-            context->EvalRotate(context->EvalFastRotation(in, padding, context->GetCyclotomicOrder(), digits), img_width ));
+    Ctxt c5 = in;
+    Ctxt c4 = context->EvalFastRotation(in, -padding, context->GetCyclotomicOrder(), digits);
+    Ctxt c6 = context->EvalFastRotation(in, padding, context->GetCyclotomicOrder(), digits);
+    Ctxt c2 = context->EvalFastRotation(in, -img_width, context->GetCyclotomicOrder(), digits);
+    Ctxt c8 = context->EvalFastRotation(in, img_width, context->GetCyclotomicOrder(), digits);
+
+    Ctxt c1 = context->EvalRotate(c4, -img_width);
+    Ctxt c3 = context->EvalRotate(c6, -img_width);
+    Ctxt c7 = context->EvalRotate(c4, img_width);
+    Ctxt c9 = context->EvalRotate(c6, img_width);
+
+    c_rotations.push_back(c1);
+    c_rotations.push_back(c2);
+    c_rotations.push_back(c3);
+    c_rotations.push_back(c4);
+    c_rotations.push_back(c5);
+    c_rotations.push_back(c6);
+    c_rotations.push_back(c7);
+    c_rotations.push_back(c8);
+    c_rotations.push_back(c9);
 
     Ptxt bias = encode(read_values_from_file("../weights/layer" + to_string(layer) + "-conv" + to_string(n) + "bn" + to_string(n) + "-bias.bin", scale), in->GetLevel(), 16384);
 
