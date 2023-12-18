@@ -192,7 +192,7 @@ Made with <3  at [Bicocca Security Lab](https://www.bislab.unimib.it), at Univer
 
 ### Declaration
 
-This is a proof of concept and, even though parameters are created wtih $\lambda \geq 128$ security bits (according to [Homomorphic Encryption Standards](https://homomorphicencryption.org/standard)), this circuit is for educational purposes only.
+This is a proof of concept and, even though parameters are created with $\lambda \geq 128$ security bits (according to [Homomorphic Encryption Standards](https://homomorphicencryption.org/standard)), this circuit is intended for educational purposes only.
 
 
 ## Bibliography
