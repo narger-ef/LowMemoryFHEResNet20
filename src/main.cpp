@@ -46,8 +46,8 @@ int main(int argc, char *argv[]) {
     }
 
     if (generate_context == -1) {
-        cerr << "You either have to use the argument \"generate_keys\" or \"load_keys\"!\nIf it is your first time, you could try"
-                "with \"./LowMemoryFHEResNet20 generate_keys \"1\"\nCheck the README.md.\nAborting. :-(" << endl;
+        cerr << "You either have to use the argument \"generate_keys\" or \"load_keys\"!\nIf it is your first time, you could try "
+                "with \"./LowMemoryFHEResNet20 generate_keys 1\"\nCheck the README.md.\nAborting. :-(" << endl;
         exit(1);
     }
 
