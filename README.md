@@ -180,7 +180,6 @@ So it was correct!
 In the `notebook` folder, it is possible to find different useful notebooks that can be used in order to compute the precision of a computation, with respect to the plain model, in details for each layer. 
 
 ## Authors
-(To be removed before submitting the paper)
 
 - Lorenzo Rovida (`lorenzo.rovida@unimib.it`)
 - Alberto Leporati (`alberto.leporati@unimib.it`)
