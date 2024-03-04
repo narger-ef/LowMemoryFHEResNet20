@@ -197,7 +197,7 @@ This is a proof of concept and, even though parameters are created with $\lambda
 ## Bibliography
 
 [1] Kim, A., Papadimitriou, A., & Polyakov, Y. (2022). 
-Approximate Homomorphic Encryption with Reduced Approximation Error*. In: Galbraith, S.D. (eds) Topics in Cryptology – CT-RSA 2022. CT-RSA 2022. Lecture Notes in Computer Science, vol 13161. Springer, Cham.
+Approximate Homomorphic Encryption with Reduced Approximation Error. In: Galbraith, S.D. (eds) Topics in Cryptology – CT-RSA 2022. CT-RSA 2022. Lecture Notes in Computer Science, vol 13161. Springer, Cham.
 
 [2] Al Badawi, A., Bates, J., Bergamaschi, F., Cousins, D. B., Erabelli, S., Genise, N., Halevi, S., Hunt, H., Kim, A., Lee, Y., Liu, Z., Micciancio, D., Quah, I., Polyakov, Y., R.V., S., Rohloff, K., Saylor, J., Suponitsky, D., Triplett, M., Zucca, V. (2022). *OpenFHE: Open-Source Fully Homomorphic Encryption Library*. Proceedings of the 10th Workshop on Encrypted Computing & Applied Homomorphic Cryptography, 53–63.
 
