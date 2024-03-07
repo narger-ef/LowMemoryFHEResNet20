@@ -383,8 +383,11 @@ void FHEController::load_rotation_keys(const string& filename, bool verbose) {
 }
 
 void FHEController::clear_bootstrapping_and_rotation_keys(int bootstrap_num_slots) {
-    FHECKKSRNS* derivedPtr = dynamic_cast<FHECKKSRNS*>(context->GetScheme()->GetFHE().get());
-    derivedPtr->m_bootPrecomMap.erase(bootstrap_num_slots);
+    //This lines would free more or less 1GB or precomputations, but requires access to the GetFHE function
+
+    //FHECKKSRNS* derivedPtr = dynamic_cast<FHECKKSRNS*>(context->GetScheme()->GetFHE().get());
+    //derivedPtr->m_bootPrecomMap.erase(bootstrap_num_slots);
+    
     clear_rotation_keys();
 }
 
@@ -748,6 +751,8 @@ Ctxt FHEController::convbn(const Ctxt &in, int layer, int n, double scale, bool 
 
     auto digits = context->EvalFastRotationPrecompute(in);
 
+    //TODO: combinations of rotations in order to perform only 8 rotations
+
     c_rotations.push_back(
             context->EvalRotate(context->EvalFastRotation(in, -padding, context->GetCyclotomicOrder(), digits), -img_width ));
     c_rotations.push_back(context->EvalFastRotation(in, -img_width, context->GetCyclotomicOrder(), digits));
@@ -806,6 +811,8 @@ Ctxt FHEController::convbn2(const Ctxt &in, int layer, int n, double scale, bool
 
     auto digits = context->EvalFastRotationPrecompute(in);
 
+    //TODO: combinations of rotations in order to perform only 8 rotations
+
     c_rotations.push_back(
             context->EvalRotate(context->EvalFastRotation(in, -padding, context->GetCyclotomicOrder(), digits), -img_width ));
     c_rotations.push_back(context->EvalFastRotation(in, -img_width, context->GetCyclotomicOrder(), digits));
@@ -863,6 +870,8 @@ Ctxt FHEController::convbn3(const Ctxt &in, int layer, int n, double scale, bool
     int padding = 1;
 
     auto digits = context->EvalFastRotationPrecompute(in);
+
+    //TODO: combinations of rotations in order to perform only 8 rotations
 
     c_rotations.push_back(
             context->EvalRotate(context->EvalFastRotation(in, -padding, context->GetCyclotomicOrder(), digits), -img_width ));
