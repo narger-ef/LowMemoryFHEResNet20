@@ -66,7 +66,7 @@ Linux or Mac operative system, with at least 16GB of RAM.
 In order to run the program, you need to install:
 - `cmake`
 - `g++` or `clang`
-- `OpenFHE` ([how to install OpenFHE](https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/intro/installation/installation.html))
+- `OpenFHE` ([how to install OpenFHE](https://openfhe-development.readthedocs.io/en/latest/sphinx_rsts/intro/installation/installation.html)), this work has been tested on v1.0.4
 
 ### 1) Build the project
 
