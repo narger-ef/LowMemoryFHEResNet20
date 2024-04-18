@@ -179,6 +179,22 @@ So it was correct!
 
 In the `notebook` folder, it is possible to find different useful notebooks that can be used in order to compute the precision of a computation, with respect to the plain model, in details for each layer. 
 
+## Citing
+In case you want to cite our work, feel free to do it using the following BibTeX entry:
+
+```
+@article{rovidaleporati,
+   author = {Rovida, Lorenzo and Leporati, Alberto},
+   title = {Encrypted Image Classification with Low Memory Footprint Using Fully Homomorphic Encryption},
+   journal = {International Journal of Neural Systems},
+   volume = {34},
+   number = {05},
+   pages = {2450025},
+   year = {2024},
+   doi = {10.1142/S0129065724500254}
+}
+```
+
 ## Authors
 
 - Lorenzo Rovida (`lorenzo.rovida@unimib.it`)
