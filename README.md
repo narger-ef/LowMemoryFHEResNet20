@@ -60,6 +60,11 @@ The idea is to use $b$, which, without the secret key $s$ would look like a rand
 
 ## How to run
 
+> [!IMPORTANT]
+> With newer versions of OpenFHE, a `DropLastElement: Removing last element of DCRTPoly renders it invalid.` error may pop up. This happens because of an additional multiplication performed by the bootstrapping. I suggest you two solutions:
+> - Relax the security parameters to (NotSet) and increase the circuit depth by 1. This will not give you a 128-bits secure circuit anymore, something less.
+> - Increase the ring dimension to $2^{17}$ and increase the circuit depth by 1. This will still give you $>128$-bits of security, but time and memory will be doubled.
+
 ### Prerequisites
 Linux or Mac operative system, with at least 16GB of RAM.
 
@@ -99,11 +104,6 @@ and run it with the following command:
 - `input`, type: `string`, the filename of a custom image. **MUST** be a three channel RGB 32x32 image either in `.jpg` or in `.png` format
 - `verbose` a value in `[-1, 0, 1, 2]`, the first shows no information, the last shows a lot of messages
 - `plain`: added when the user wants the plain result too. Note: enabling this option means that a Python script will be executed after the encrypted inference. This script requires the following modules: `torch`, `torchvision`, `PIL`, `numpy`.
-
-> [!IMPORTANT]
-> With newer versions of OpenFHE, a `DropLastElement: Removing last element of DCRTPoly renders it invalid.` error may pop up. This happens because of an additional multiplication performed by the bootstrapping. I suggest you two solutions:
-> - Relax the security parameters to (NotSet) and increase the circuit depth by 1. This will not give you a 128-bits secure circuit anymore, something less.
-> - Increase the ring dimension to $2^{17}$ and increase the circuit depth by 1. This will still give you $>128$-bits of security, but time and memory will be doubled.
 
 #### Some examples 
 
