@@ -164,7 +164,7 @@ In this case, the maximum value is at position 5. Just translate it using the fo
 
 In the sample output, the input image was my dog Vale:
 
-> <img src="imgs/vale.png" alt="ResNet dog input image" width=20%>
+> <img src="inputs/vale.jpg" alt="ResNet dog input image" width=20%>
 
 ---
 
@@ -174,9 +174,9 @@ Another output could be
 output = [-0.719, -4.19, -0.252, 12.04, -4.979, 4.413, -0.5173, -1.038, -2.229, -2.504]
 ```
 
-In this case, the index of max is 3, which is nice, since the input image was Luis, my brother's cat:
+In this case, the index of max is 3, which is nice, since the input image was Luis the cat:
 
-> <img src="imgs/luis.png" alt="ResNet cat input image" width=20%>
+> <img src="inputs/luis.png" alt="ResNet cat input image" width=20%>
 
 So it was correct!
 
